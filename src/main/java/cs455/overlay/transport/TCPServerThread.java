@@ -1,0 +1,58 @@
+package cs455.overlay.transport;
+
+import java.io.IOException;
+import java.net.*;
+
+import cs455.overlay.node.Node;
+
+public class TCPServerThread implements Runnable{
+	private ServerSocket serverSocket = null;
+	private Node node;
+	
+	public TCPServerThread(Node node) throws IOException {
+		//saving node reference to pass to a reciever thread and later call an onEvent method		
+		this.node=node;
+		
+		// iterate through the ports, and try to initialize a socket on a first free port found.
+		for (int port =1; port < 65000; port++) {
+	        try {
+	        	serverSocket = new ServerSocket(port);
+	        	System.out.println("Server thread initialized: "+serverSocket.getLocalSocketAddress());
+	        	return;
+	        } catch (IOException ex) {
+	            continue; // try next port
+	        }
+	    }
+	    // no free port in a given range was found. Otherwise, method would have exited sooner.  
+	    throw new java.io.IOException("no free port found");
+	}
+	
+	public SocketAddress getAddress() {
+		return serverSocket.getLocalSocketAddress();
+	}
+	
+	@Override
+	public void run() {
+		Socket clientSocket = null;
+		while(true) {
+			try {
+				clientSocket = this.serverSocket.accept();
+				
+				TCPRecieverThread recieverThread = new TCPRecieverThread(clientSocket, node);
+				//recieverThread.run();
+				Thread rthread = new Thread(recieverThread);
+				rthread.start();
+				
+				node.addContactsEntry(clientSocket.getLocalSocketAddress(), new TCPSender(clientSocket));
+				
+				//TODO: notify about successful connection
+				System.out.println("Client connected: "+clientSocket.getInetAddress());
+			}
+			catch (java.io.IOException e) {
+				//TODO: implement notifying about exception
+	            e.printStackTrace();
+	        }
+		}
+    }
+	
+}
