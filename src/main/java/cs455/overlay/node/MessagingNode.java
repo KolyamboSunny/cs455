@@ -2,7 +2,8 @@ package cs455.overlay.node;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.net.SocketAddress;
+import java.net.UnknownHostException;
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 
 import cs455.overlay.transport.*;
@@ -10,18 +11,22 @@ import cs455.overlay.wireformats.*;
 
 public class MessagingNode implements Node{
 	TCPServerThread serverThread = null;
-	TCPSender sender = null;
-	HashMap<SocketAddress, TCPSender> contacts = new HashMap<SocketAddress, TCPSender>();
+	TCPSender registrySender = null;
+	HashMap<InetSocketAddress, TCPSender> contacts = new HashMap<InetSocketAddress, TCPSender>();
 	
-	public MessagingNode() throws IOException {		
-
+	public MessagingNode(String registryHost, int registryPort) throws IOException {						
 		serverThread = new TCPServerThread(this);
 		Thread sthread = new Thread(serverThread);
-		sthread.start();							
+		sthread.start();
+		
+		register(registryHost, registryPort);
 	}
 	
-	public void register(String registryHost, int registryPort) {
-		
+	public void register(String registryHost, int registryPort) throws UnknownHostException, IOException {
+		this.registrySender = new TCPSender(registryHost,registryPort);
+		String selfHost = this.serverThread.getAddress().getHostAddress();
+		int selfPort = this.serverThread.getPort();
+		registrySender.sendData(new Register(selfHost,selfPort).getBytes());
 	}
 	
 	@Override
@@ -40,7 +45,7 @@ public class MessagingNode implements Node{
 		System.out.println(recievedMessage);
 	}
 	
-	public void sendMessage(SocketAddress dest, long payload) {
+	public void sendMessage(InetSocketAddress dest, long payload) {
 		Message msg = new Message(serverThread.getAddress().toString(),dest.toString(),payload);
 		Socket socket = new Socket();
 		try {
@@ -57,15 +62,18 @@ public class MessagingNode implements Node{
 	}
 	
 	
-	public SocketAddress getServerAddress() {
-		return serverThread.getAddress();
-	}
-	public void addContactsEntry(SocketAddress address,TCPSender sender) {
-		contacts.put(address, sender);
-	}
-	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
+		String registryHost = args[0];
+		int registryPort = Integer.parseInt(args[1]);
+		try {
+			@SuppressWarnings("unused")
+			MessagingNode m = new MessagingNode(registryHost,registryPort);
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 	}
 

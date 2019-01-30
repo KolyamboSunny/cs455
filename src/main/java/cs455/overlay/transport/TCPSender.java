@@ -2,6 +2,7 @@ package cs455.overlay.transport;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -22,6 +23,10 @@ public class TCPSender{
 	public TCPSender(String host, int port) throws UnknownHostException, IOException {				
 		this(new Socket(host,port));
 	}
+	public TCPSender(InetSocketAddress address) throws UnknownHostException, IOException{				
+		this(address.getHostString(),address.getPort());
+	}
+	
 
 	public void sendData(byte[] dataToSend) {
 		int dataLength = dataToSend.length;

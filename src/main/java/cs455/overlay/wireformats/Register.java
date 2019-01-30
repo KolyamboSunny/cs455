@@ -11,8 +11,14 @@ import java.io.ObjectOutputStream;
 public class Register implements Event{
 
 	String registeringIp;
+	public String getRegisteringIp() {
+		return registeringIp;
+	}
 	int registeringPort;
-	
+	public int getRegisteringPort() {
+		return registeringPort;
+	}
+
 	public Register(String registeringIp, int registeringPort) {
 		this.registeringIp=registeringIp;
 		this.registeringPort = registeringPort;
@@ -64,4 +70,12 @@ public class Register implements Event{
 		} 
 	}
 	
+	public String toString() {
+		String result = "";
+		result += "Message Type: "+this.getType()+"\t";
+		result += "Registering IP: "+this.registeringIp+"\t";
+		result += "Registering Port: "+this.registeringPort;
+		return result;
+		
+	}
 }

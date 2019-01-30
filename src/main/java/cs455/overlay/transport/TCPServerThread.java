@@ -8,6 +8,10 @@ import cs455.overlay.node.Node;
 public class TCPServerThread implements Runnable{
 	private ServerSocket serverSocket = null;
 	private Node node;
+	private int port;
+	public int getPort() {
+		return this.port;
+	}
 	
 	public TCPServerThread(Node node) throws IOException {
 		//saving node reference to pass to a reciever thread and later call an onEvent method		
@@ -17,6 +21,7 @@ public class TCPServerThread implements Runnable{
 		for (int port =1; port < 65000; port++) {
 	        try {
 	        	serverSocket = new ServerSocket(port);
+	        	this.port = port;
 	        	System.out.println("Server thread initialized: "+serverSocket.getLocalSocketAddress());
 	        	return;
 	        } catch (IOException ex) {
@@ -26,9 +31,19 @@ public class TCPServerThread implements Runnable{
 	    // no free port in a given range was found. Otherwise, method would have exited sooner.  
 	    throw new java.io.IOException("no free port found");
 	}
+	public TCPServerThread(int port, Node node) throws IOException {
+		//saving node reference to pass to a reciever thread and later call an onEvent method		
+		this.node=node;
+		
+		// iterate through the ports, and try to initialize a socket on a first free port found.
 	
-	public SocketAddress getAddress() {
-		return serverSocket.getLocalSocketAddress();
+	        	serverSocket = new ServerSocket(port);
+	        	this.port = port;
+	        	System.out.println("Server thread initialized: "+serverSocket.getLocalSocketAddress());
+	}
+	
+	public InetAddress getAddress() {
+		return serverSocket.getInetAddress();
 	}
 	
 	@Override
@@ -43,7 +58,7 @@ public class TCPServerThread implements Runnable{
 				Thread rthread = new Thread(recieverThread);
 				rthread.start();
 				
-				node.addContactsEntry(clientSocket.getLocalSocketAddress(), new TCPSender(clientSocket));
+				//node.addContactsEntry(clientSocket.getLocalSocketAddress(), new TCPSender(clientSocket));
 				
 				//TODO: notify about successful connection
 				System.out.println("Client connected: "+clientSocket.getInetAddress());

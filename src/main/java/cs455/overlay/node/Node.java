@@ -9,5 +9,5 @@ public interface Node {
 
 	public void onEvent(Event event) throws Exception;
 	
-	public void addContactsEntry(SocketAddress address,TCPSender sender);
+	//public void addContactsEntry(SocketAddress address,TCPSender sender);
 }

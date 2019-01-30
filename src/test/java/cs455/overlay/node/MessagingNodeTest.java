@@ -10,10 +10,10 @@ public class MessagingNodeTest {
 
 	@Test
 	public void testMessagingNode() throws IOException {
-		MessagingNode m1 = new MessagingNode();	
-		MessagingNode m2 = new MessagingNode();	
+	//	MessagingNode m1 = new MessagingNode();	
+	//	MessagingNode m2 = new MessagingNode();	
 		
-		m1.sendMessage(m2.getServerAddress(), 1488);
+	//	m1.sendMessage(m2.getServerAddress(), 1488);
 		
 		fail("Not yet implemented");
 	}
