@@ -1,7 +1,6 @@
 package cs455.overlay.node;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.util.HashMap;
@@ -12,7 +11,7 @@ import cs455.overlay.wireformats.*;
 public class MessagingNode implements Node{
 	TCPServerThread serverThread = null;
 	TCPSender sender = null;
-	HashMap contacts = new HashMap();
+	HashMap<SocketAddress, TCPSender> contacts = new HashMap<SocketAddress, TCPSender>();
 	
 	public MessagingNode() throws IOException {		
 
@@ -21,12 +20,19 @@ public class MessagingNode implements Node{
 		sthread.start();							
 	}
 	
+	public void register(String registryHost, int registryPort) {
+		
+	}
+	
 	@Override
-	public void onEvent(Event event) {
+	public void onEvent(Event event) throws Exception {
 		switch (event.getType()) {
 		case MESSAGE: 
 			onMessageRecieved((Message)event);
 			break;
+		default:
+			throw new Exception("Event of this type is not supported");
+			//break;
 		}
 		
 	}	
@@ -60,17 +66,7 @@ public class MessagingNode implements Node{
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		try {
-			@SuppressWarnings("unused")
-			MessagingNode m1 = new MessagingNode();	
-			MessagingNode m2 = new MessagingNode();	
-			
-			m1.sendMessage(m2.getServerAddress(), 1488);
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		
 	}
 
 
