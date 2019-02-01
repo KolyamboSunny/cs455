@@ -35,8 +35,7 @@ public class TCPServerThread implements Runnable{
 		//saving node reference to pass to a reciever thread and later call an onEvent method		
 		this.node=node;
 		
-		// iterate through the ports, and try to initialize a socket on a first free port found.
-	
+		// iterate through the ports, and try to initialize a socket on a first free port found.	
 	        	serverSocket = new ServerSocket(port);
 	        	this.port = port;
 	        	System.out.println("Server thread initialized: "+serverSocket.getLocalSocketAddress());
@@ -54,14 +53,10 @@ public class TCPServerThread implements Runnable{
 				clientSocket = this.serverSocket.accept();
 				
 				TCPRecieverThread recieverThread = new TCPRecieverThread(clientSocket, node);
-				//recieverThread.run();
 				Thread rthread = new Thread(recieverThread);
 				rthread.start();
-				
-				//node.addContactsEntry(clientSocket.getLocalSocketAddress(), new TCPSender(clientSocket));
-				
-				//TODO: notify about successful connection
-				System.out.println("Client connected: "+clientSocket.getInetAddress());
+											
+				//System.out.println("Client connected: "+clientSocket.getInetAddress());
 			}
 			catch (java.io.IOException e) {
 				//TODO: implement notifying about exception
