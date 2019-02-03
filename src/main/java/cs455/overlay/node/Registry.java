@@ -12,9 +12,13 @@ import cs455.overlay.wireformats.*;
 public class Registry implements Node {
 	
 	TCPServerThread serverThread = null;
+	
 	HashMap<InetSocketAddress,TCPSender> registeredNodes = new HashMap<InetSocketAddress,TCPSender>();
+	public Set<InetSocketAddress> getRegisteredNodes() {
+		return registeredNodes.keySet();
+	}
+	
 	public Registry(int registryPort) throws IOException {		
-
 		serverThread = new TCPServerThread(registryPort, this);
 		Thread sthread = new Thread(serverThread);
 		sthread.start();							
@@ -28,7 +32,6 @@ public class Registry implements Node {
 			break;
 		default:
 			throw new Exception("Event of this type is not supported");
-			//break;
 		}
 		
 	}
@@ -46,9 +49,11 @@ public class Registry implements Node {
 	
 	public static void main(String[] args) {
 		int port = Integer.parseUnsignedInt(args[0]);
-		try {
-			@SuppressWarnings("unused")
-			Registry r = new Registry(port);
+		try {			
+			Registry registry = new Registry(port);
+			
+			Thread sthread = new Thread(new RegistryCommandInterpreter(registry));
+			sthread.start();
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

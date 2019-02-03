@@ -3,10 +3,6 @@ package cs455.overlay.wireformats;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -35,18 +31,13 @@ public class Register implements Event{
 	public byte[] getBytes() {
 		byte[] encodedEvent = null;
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		ObjectOutput out = null;
 		
 		try {
-		  out = new ObjectOutputStream(bos); 
-		  
-		  out.writeObject(this.getType());
-		  
-		  out.writeObject(registeringIp);		 		  
-		  out.writeInt(registeringPort);
-		  		  
-		  out.flush();
-		  encodedEvent = bos.toByteArray();
+			bos.write(getType().ordinal());
+			bos.write(registeringIp);
+			bos.write(registeringPort);
+			bos.flush();
+			encodedEvent = bos.toByteArray();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -54,17 +45,14 @@ public class Register implements Event{
 		return encodedEvent;
 	}
 	public Register(byte[] byteEncoding) throws Exception {
-		ByteArrayInputStream bis = new ByteArrayInputStream(byteEncoding);
-		ObjectInput in = null;
-		try {
-		  in = new ObjectInputStream(bis);
-		  
-		  EventType type = (EventType)in.readObject();
+		ByteArrayInputStream bis = new ByteArrayInputStream(byteEncoding);		
+		try {		  
+		  EventType type = EventType.values()[bis.read()];
 		  if (type!=this.getType())
 			  throw new Exception("Encode message has an unexpected type");
-		  
-		  this.registeringIp=(byte[])in.readObject();
-		  this.registeringPort=in.readInt();
+		  this.registeringIp = new byte[4];
+		  bis.read(this.registeringIp, 0, 4);
+		  this.registeringPort=bis.read();
 
 		} catch (IOException | ClassNotFoundException e) {
 			// TODO Auto-generated catch block

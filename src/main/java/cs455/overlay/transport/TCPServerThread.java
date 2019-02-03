@@ -35,10 +35,14 @@ public class TCPServerThread implements Runnable{
 		//saving node reference to pass to a reciever thread and later call an onEvent method		
 		this.node=node;
 		
-		// iterate through the ports, and try to initialize a socket on a first free port found.	
-	        	serverSocket = new ServerSocket(port);
-	        	this.port = port;
-	        	System.out.println("Server thread initialized: "+serverSocket.getLocalSocketAddress());
+		// try to initialize socket on a first free port
+		try {
+			serverSocket = new ServerSocket(port);
+			this.port = port;
+			System.out.println("Server thread initialized: "+serverSocket.getInetAddress().getHostAddress());
+		}catch(java.net.BindException e) {
+			System.out.println("Server thread failed to initialize on port: "+port);
+		}
 	}
 	
 	public InetAddress getAddress() throws UnknownHostException {

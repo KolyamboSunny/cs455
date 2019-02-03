@@ -8,6 +8,4 @@ import cs455.overlay.wireformats.Event;
 public interface Node {
 
 	public void onEvent(Event event) throws Exception;
-	
-	//public void addContactsEntry(SocketAddress address,TCPSender sender);
 }

@@ -35,7 +35,7 @@ public class TCPRecieverThread implements Runnable{
 			}
 			catch(SocketException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.err.println("Connection to host "+socket.getInetAddress().getHostAddress()+":"+socket.getPort()+" did not terminate gracefully");
 				break;
 			}
 			catch(IOException e) {

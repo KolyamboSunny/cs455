@@ -2,17 +2,13 @@ package cs455.overlay.wireformats;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
 
 public class EventFactory {
 	
 	private static EventType getEventType(byte[] encodedEvent) throws IOException, ClassNotFoundException {
 		ByteArrayInputStream bis = new ByteArrayInputStream(encodedEvent);
-		ObjectInput in = null;
-
-		in = new ObjectInputStream(bis);			  
-		EventType type = (EventType)in.readObject();
+		  
+		EventType type = EventType.values()[bis.read()];;
 		return type;		
 	}
 	
