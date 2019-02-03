@@ -19,7 +19,13 @@ public class Register implements Event{
 	}
 
 	byte isSuccessful = 1;
+	public byte getIsSuccessful() {
+		return isSuccessful;
+	}
 	String additionalInfo="";
+	public String getAdditionalInfo() {
+		return additionalInfo;
+	}
 	
  	public Register(byte[] registeringIp, int registeringPort) {
  		this.type = EventType.REGISTER_REQUEST;
@@ -52,7 +58,7 @@ public class Register implements Event{
 			bos.write(getType().ordinal());
 			if(this.getType()==EventType.REGISTER_REQUEST) {
 				bos.write(registeringIp);
-				bos.write(registeringPort);
+				ByteEncoder.writeEncodedInt(registeringPort, bos);
 			}
 			else {
 				bos.write(isSuccessful);
@@ -72,7 +78,7 @@ public class Register implements Event{
 		if (type==EventType.REGISTER_REQUEST) {			
 			this.registeringIp = new byte[4];
 			bis.read(this.registeringIp, 0, 4);
-			this.registeringPort=bis.read();
+			this.registeringPort=ByteEncoder.readEncodedInt(bis);
 		}
 		else {
 			this.isSuccessful = (byte)bis.read();
