@@ -35,6 +35,9 @@ public class MessagingNode implements Node{
 		case MESSAGE: 
 			onMessageRecieved((Message)event);
 			break;
+		case REGISTER_RESPONSE: 
+			onRegisterResponseRecieved((Register)event);
+			break;
 		default:
 			throw new Exception("Event of this type is not supported");
 			//break;
@@ -43,6 +46,9 @@ public class MessagingNode implements Node{
 	}	
 	private void onMessageRecieved(Message recievedMessage) {
 		System.out.println(recievedMessage);
+	}
+	private void onRegisterResponseRecieved(Register recievedRegisterResponse) {
+		System.out.println(recievedRegisterResponse);
 	}
 	
 	public void sendMessage(InetSocketAddress dest, long payload) throws UnknownHostException {

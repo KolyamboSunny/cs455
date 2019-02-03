@@ -7,7 +7,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 public class Register implements Event{
-
+	private EventType type;
+	
 	byte[] registeringIp;
 	public byte[] getRegisteringIp() {
 		return registeringIp;
@@ -17,14 +18,29 @@ public class Register implements Event{
 		return registeringPort;
 	}
 
-	public Register(byte[] registeringIp, int registeringPort) {
+	byte isSuccessful = 1;
+	String additionalInfo="";
+	
+ 	public Register(byte[] registeringIp, int registeringPort) {
+ 		this.type = EventType.REGISTER_REQUEST;
 		this.registeringIp=registeringIp;
 		this.registeringPort = registeringPort;
 	}
+ 	public Register(boolean isSuccessful, String additionalInfo) {
+ 		this.type = EventType.REGISTER_RESPONSE;
+ 		
+ 		if (isSuccessful) this.isSuccessful = 1;
+ 		else this.isSuccessful = 0;
+ 		
+ 		this.additionalInfo = additionalInfo;
+ 	}
+ 	public Register(boolean isSuccessful) {
+ 		this(isSuccessful,"");
+ 	}
 	
-	@Override
+ 	@Override
 	public EventType getType() {
-		return EventType.REGISTER;
+		return type;
 	}
 	
 	@Override
@@ -34,8 +50,14 @@ public class Register implements Event{
 		
 		try {
 			bos.write(getType().ordinal());
-			bos.write(registeringIp);
-			bos.write(registeringPort);
+			if(this.getType()==EventType.REGISTER_REQUEST) {
+				bos.write(registeringIp);
+				bos.write(registeringPort);
+			}
+			else {
+				bos.write(isSuccessful);
+				ByteEncoder.writeEncodedString(additionalInfo, bos);
+			}
 			bos.flush();
 			encodedEvent = bos.toByteArray();
 		} catch (IOException e) {
@@ -44,31 +66,35 @@ public class Register implements Event{
 		} 
 		return encodedEvent;
 	}
-	public Register(byte[] byteEncoding) throws Exception {
+	public Register(byte[] byteEncoding) throws IOException {
 		ByteArrayInputStream bis = new ByteArrayInputStream(byteEncoding);		
-		try {		  
-		  EventType type = EventType.values()[bis.read()];
-		  if (type!=this.getType())
-			  throw new Exception("Encode message has an unexpected type");
-		  this.registeringIp = new byte[4];
-		  bis.read(this.registeringIp, 0, 4);
-		  this.registeringPort=bis.read();
-
-		} catch (IOException | ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		this.type = EventType.values()[bis.read()];
+		if (type==EventType.REGISTER_REQUEST) {			
+			this.registeringIp = new byte[4];
+			bis.read(this.registeringIp, 0, 4);
+			this.registeringPort=bis.read();
+		}
+		else {
+			this.isSuccessful = (byte)bis.read();
+			this.additionalInfo = ByteEncoder.readEncodedString(bis);
 		} 
 	}
 	
 	public String toString() {
 		String result = "";
 		result += "Message Type: "+this.getType()+"\t";
-		try {
-			result += "Registering IP: "+InetAddress.getByAddress(this.registeringIp).getHostAddress()+"\t";
-		} catch (UnknownHostException e) {
-			result += "Registering IP: "+"N\\A"+"\t";
+		if(type==EventType.REGISTER_REQUEST) {		
+			try {
+				result += "Registering IP: "+InetAddress.getByAddress(this.registeringIp).getHostAddress()+"\t";
+			} catch (UnknownHostException e) {
+				result += "Registering IP: "+"N\\A"+"\t";
+			}
+			result += "Registering Port: "+this.registeringPort;
 		}
-		result += "Registering Port: "+this.registeringPort;
+		else {
+			result += "Status Code: "+this.isSuccessful+"\t";
+			result += "Additional Info: "+this.additionalInfo;
+		}
 		return result;
 		
 	}

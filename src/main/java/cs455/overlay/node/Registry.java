@@ -27,7 +27,7 @@ public class Registry implements Node {
 	@Override
 	public void onEvent(Event event) throws Exception {
 		switch (event.getType()) {
-		case REGISTER: 
+		case REGISTER_REQUEST: 
 			onRegistrationRequestRecieved((Register)event);
 			break;
 		default:
@@ -37,13 +37,13 @@ public class Registry implements Node {
 	}
 	private void onRegistrationRequestRecieved(Register registrationRequest) throws UnknownHostException {
 		System.out.println(registrationRequest);
-		InetAddress registeredAddress = InetAddress.getByAddress(registrationRequest.getRegisteringIp());
-		InetSocketAddress address = new InetSocketAddress(registeredAddress,registrationRequest.getRegisteringPort());
+		InetSocketAddress address = NodeUtilHelpers.constructAddress(registrationRequest.getRegisteringIp(),registrationRequest.getRegisteringPort());
 		try {
 			registeredNodes.put(address, new TCPSender(address));
+			registeredNodes.get(address).sendData(new Register(true).getBytes());
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			registeredNodes.get(address).sendData(new Register(false,e.getMessage()).getBytes());
 		}
 	}
 	

@@ -17,7 +17,9 @@ public class EventFactory {
 		switch(encodedEventType) {
 			case MESSAGE:
 				return new Message(encodedEvent);
-			case REGISTER:
+			case REGISTER_REQUEST:
+				return new Register(encodedEvent);
+			case REGISTER_RESPONSE:
 				return new Register(encodedEvent);
 			default:
 				throw new Exception("Message type unknown");

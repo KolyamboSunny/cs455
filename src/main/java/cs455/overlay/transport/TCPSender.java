@@ -38,6 +38,5 @@ public class TCPSender{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//sendingStream.write_string();
 	}
 }
