@@ -38,6 +38,13 @@ public class Registry implements Node {
 	private void onRegistrationRequestRecieved(Register registrationRequest) throws UnknownHostException {
 		System.out.println(registrationRequest);
 		InetSocketAddress address = NodeUtilHelpers.constructAddress(registrationRequest.getRegisteringIp(),registrationRequest.getRegisteringPort());
+		// check if the node has been previously registered
+		if (registeredNodes.containsKey(address)) {
+			registeredNodes.get(address).sendData(new Register(false,"This node has already been registered").getBytes());
+			return;
+		}
+		//TODO: check if the node ip matches the one in the registration request
+
 		try {
 			registeredNodes.put(address, new TCPSender(address));
 			registeredNodes.get(address).sendData(new Register(true).getBytes());
