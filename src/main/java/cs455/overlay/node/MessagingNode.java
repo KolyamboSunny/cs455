@@ -24,7 +24,7 @@ public class MessagingNode implements Node{
 	
 	public void register(String registryHost, int registryPort) throws UnknownHostException, IOException {
 		this.registrySender = new TCPSender(registryHost,registryPort);
-		String selfHost = this.serverThread.getAddress().getCanonicalHostName();
+		byte[] selfHost = this.serverThread.getAddress().getAddress();
 		int selfPort = this.serverThread.getPort();
 		registrySender.sendData(new Register(selfHost,selfPort).getBytes());
 	}
@@ -45,7 +45,7 @@ public class MessagingNode implements Node{
 		System.out.println(recievedMessage);
 	}
 	
-	public void sendMessage(InetSocketAddress dest, long payload) {
+	public void sendMessage(InetSocketAddress dest, long payload) throws UnknownHostException {
 		Message msg = new Message(serverThread.getAddress().toString(),dest.toString(),payload);
 		Socket socket = new Socket();
 		try {

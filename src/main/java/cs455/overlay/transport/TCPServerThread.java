@@ -41,8 +41,9 @@ public class TCPServerThread implements Runnable{
 	        	System.out.println("Server thread initialized: "+serverSocket.getLocalSocketAddress());
 	}
 	
-	public InetAddress getAddress() {
-		return serverSocket.getInetAddress();
+	public InetAddress getAddress() throws UnknownHostException {
+		serverSocket.getInetAddress();
+		return InetAddress.getLocalHost();
 	}
 	
 	@Override

@@ -1,7 +1,9 @@
 package cs455.overlay.node;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.*;
 
 import cs455.overlay.transport.*;
@@ -30,9 +32,10 @@ public class Registry implements Node {
 		}
 		
 	}
-	private void onRegistrationRequestRecieved(Register registrationRequest) {
+	private void onRegistrationRequestRecieved(Register registrationRequest) throws UnknownHostException {
 		System.out.println(registrationRequest);
-		InetSocketAddress address = new InetSocketAddress(registrationRequest.getRegisteringIp(),registrationRequest.getRegisteringPort());
+		InetAddress registeredAddress = InetAddress.getByAddress(registrationRequest.getRegisteringIp());
+		InetSocketAddress address = new InetSocketAddress(registeredAddress,registrationRequest.getRegisteringPort());
 		try {
 			registeredNodes.put(address, new TCPSender(address));
 		} catch (IOException e) {
