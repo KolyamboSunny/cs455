@@ -38,17 +38,34 @@ public class MessagingNode implements Node{
 		case REGISTER_RESPONSE: 
 			onRegisterResponseRecieved((Register)event);
 			break;
+		case MESSAGING_NODES_LIST: 
+			onMessagingNodesListRecieved((MessagingNodesList)event);
+			break;
 		default:
 			throw new Exception("Event of this type is not supported");
 			//break;
 		}
 		
 	}	
+
 	private void onMessageRecieved(Message recievedMessage) {
 		System.out.println(recievedMessage);
 	}
 	private void onRegisterResponseRecieved(Register recievedRegisterResponse) {
 		System.out.println(recievedRegisterResponse);
+	}
+	private void onMessagingNodesListRecieved(MessagingNodesList recievedMessagingNodesList) {				
+		//establish connections to the desired nodes
+		boolean success=true;
+		for(InetSocketAddress node : recievedMessagingNodesList.destinations) {
+			try {
+				contacts.put(node, new TCPSender(node));				
+			} catch (IOException e) {
+				success = false;
+				System.err.println("Failed to establish connection to "+node.toString());
+			}
+		}
+		if(success)System.out.println("All connections are established. Number of connections: "+contacts.size());
 	}
 	
 	public void sendMessage(InetSocketAddress dest, long payload) throws UnknownHostException {

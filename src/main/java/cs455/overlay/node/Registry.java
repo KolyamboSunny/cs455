@@ -1,12 +1,12 @@
 package cs455.overlay.node;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.*;
 
 import cs455.overlay.transport.*;
+import cs455.overlay.util.OverlayCreator;
 import cs455.overlay.wireformats.*;
 
 public class Registry implements Node {
@@ -51,6 +51,16 @@ public class Registry implements Node {
 		} catch (IOException e) {
 			e.printStackTrace();
 			registeredNodes.get(address).sendData(new Register(false,e.getMessage()).getBytes());
+		}
+	}
+	
+	public void setupOverlay(int numberOfConnections) {
+		OverlayCreator overlayCreator = new OverlayCreator();
+		Map<InetSocketAddress,Collection<InetSocketAddress>> connectionsTable = overlayCreator.buildConnectionsTable(registeredNodes.keySet(), numberOfConnections);
+		for(InetSocketAddress node:connectionsTable.keySet()) {
+			TCPSender sender = registeredNodes.get(node);
+			MessagingNodesList instructions = new MessagingNodesList(connectionsTable.get(node));
+			sender.sendData(instructions.getBytes());
 		}
 	}
 	

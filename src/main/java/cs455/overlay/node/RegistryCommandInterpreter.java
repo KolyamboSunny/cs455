@@ -6,11 +6,12 @@ import java.util.Scanner;
 public class RegistryCommandInterpreter implements Runnable{
 	
 	private enum CommandCode {		
-		list_messaging_nodes
+		list_messaging_nodes,
+		setup_overlay
 		}
 	private CommandCode getCommandCode(String command) throws Exception {
 		if (command.equalsIgnoreCase("list-messaging-nodes")) return CommandCode.list_messaging_nodes;
-		
+		if (command.equalsIgnoreCase("setup-overlay")) return CommandCode.setup_overlay;
 		throw new Exception("Command is not recognized");
 	}
 	
@@ -49,7 +50,10 @@ public class RegistryCommandInterpreter implements Runnable{
 	    	case list_messaging_nodes:
 	    		printMessagingNodes();
 	    		break;
-	    	
+	    	case setup_overlay:
+	    		int numberOfConnections = scanner.nextInt();
+	    		registry.setupOverlay(numberOfConnections);
+	    		break;
 	    	}
 	    }
 	    

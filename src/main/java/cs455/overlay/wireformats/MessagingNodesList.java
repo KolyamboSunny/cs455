@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.HashSet;
 
 public class MessagingNodesList implements Event {
-	Collection<InetSocketAddress> destinations;
+	public Collection<InetSocketAddress> destinations;
 	
 	public MessagingNodesList(Collection<InetSocketAddress> destinations) {
 		this.destinations = destinations;

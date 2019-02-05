@@ -53,7 +53,7 @@ public class OverlayCreator {
 				}
 			}
 		}
-		return null;
+		return this.connectionTable;
 	}
 
 }
