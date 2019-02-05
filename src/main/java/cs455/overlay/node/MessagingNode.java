@@ -30,6 +30,16 @@ public class MessagingNode implements Node{
 	}
 	
 	@Override
+	public void addContact(InetSocketAddress address) {
+		try {
+			contacts.put(address, new TCPSender(address));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	@Override
 	public void onEvent(Event event) throws Exception {
 		switch (event.getType()) {
 		case MESSAGE: 
@@ -99,6 +109,8 @@ public class MessagingNode implements Node{
 		}
 		
 	}
+
+	
 
 
 }

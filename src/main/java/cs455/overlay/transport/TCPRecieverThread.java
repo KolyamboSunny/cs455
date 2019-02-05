@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.*;
 
 import cs455.overlay.node.Node;
+import cs455.overlay.node.NodeUtilHelpers;
 import cs455.overlay.wireformats.Event;
 import cs455.overlay.wireformats.EventFactory;
 
@@ -32,6 +33,7 @@ public class TCPRecieverThread implements Runnable{
 				inputStream.readFully(data, 0, dataLength);		
 				Event recievedEvent = EventFactory.getEvent(data);
 				node.onEvent(recievedEvent);
+				node.addContact(NodeUtilHelpers.constructAddress(socket.getInetAddress().getAddress(),socket.getPort()));
 			}
 			catch(SocketException e) {
 				// TODO Auto-generated catch block

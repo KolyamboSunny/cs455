@@ -78,4 +78,10 @@ public class Registry implements Node {
 		}
 	}
 
+	@Override
+	public void addContact(InetSocketAddress address) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
