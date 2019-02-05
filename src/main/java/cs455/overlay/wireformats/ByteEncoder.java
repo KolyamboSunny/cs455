@@ -3,8 +3,11 @@ package cs455.overlay.wireformats;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+
+import cs455.overlay.node.NodeUtilHelpers;
 
 public class ByteEncoder {
 
@@ -18,6 +21,18 @@ public class ByteEncoder {
 		byte[] encodedInt = ByteBuffer.allocate(Integer.BYTES).putInt(toWrite).array();
 		bos.write(encodedInt);
 	}
+	
+	public static void writeEncodedAddress(InetSocketAddress toWrite, ByteArrayOutputStream bos) throws IOException {
+		bos.write(toWrite.getAddress().getAddress());
+		writeEncodedInt(toWrite.getPort(),bos);		
+	}
+	public static InetSocketAddress readEncodedAddress(ByteArrayInputStream bis) throws IOException {				
+		byte[] ip = new byte[4];
+		bis.read(ip,0,4);
+		int port = readEncodedInt(bis);
+		return NodeUtilHelpers.constructAddress(ip,port);
+	}
+	
 	public static void writeEncodedString(String toWrite, ByteArrayOutputStream bos) throws IOException {
 		byte[] encodedString = toWrite.getBytes();
 		writeEncodedInt(encodedString.length,bos);

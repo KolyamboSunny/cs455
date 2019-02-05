@@ -21,6 +21,8 @@ public class EventFactory {
 				return new Register(encodedEvent);
 			case REGISTER_RESPONSE:
 				return new Register(encodedEvent);
+			case MESSAGING_NODES_LIST:
+				return new MessagingNodesList(encodedEvent);
 			default:
 				throw new Exception("Message type unknown");
 		}		
