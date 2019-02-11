@@ -23,6 +23,8 @@ public class EventFactory {
 				return new Register(encodedEvent);
 			case MESSAGING_NODES_LIST:
 				return new MessagingNodesList(encodedEvent);
+			case LINK_WEIGHTS:
+				return new LinkWeights(encodedEvent);
 			default:
 				throw new Exception("Message type unknown");
 		}		

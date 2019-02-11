@@ -5,6 +5,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
+import java.util.Map;
 
 import cs455.overlay.transport.*;
 import cs455.overlay.wireformats.*;
@@ -12,44 +13,48 @@ import cs455.overlay.wireformats.*;
 public class MessagingNode implements Node{
 	TCPServerThread serverThread = null;
 	TCPSender registrySender = null;
-	HashMap<InetSocketAddress, TCPSender> contacts = new HashMap<InetSocketAddress, TCPSender>();
-	
+	Map<InetSocketAddress, TCPSender> contacts = new HashMap<InetSocketAddress, TCPSender>();
+	Map<InetSocketAddress, Map<InetSocketAddress,Integer>> linkWeights;
+	InetSocketAddress ownAddress;
 	public MessagingNode(String registryHost, int registryPort) throws IOException {						
 		serverThread = new TCPServerThread(this);
 		Thread sthread = new Thread(serverThread);
 		sthread.start();
 		
+		ownAddress = NodeUtilHelpers.constructAddress(this.serverThread.getAddress().getAddress(), this.serverThread.getPort());
+		
 		register(registryHost, registryPort);
 	}
 	
+	private void registerWithOtherNode(InetSocketAddress node) throws UnknownHostException, IOException {
+		TCPSender sender = contacts.get(node);
+		sender.sendData(new Register(ownAddress.getAddress().getAddress(),ownAddress.getPort()).getBytes());
+	}
 	public void register(String registryHost, int registryPort) throws UnknownHostException, IOException {
 		this.registrySender = new TCPSender(registryHost,registryPort);
 		byte[] selfHost = this.serverThread.getAddress().getAddress();
 		int selfPort = this.serverThread.getPort();
-		registrySender.sendData(new Register(selfHost,selfPort).getBytes());
+		this.registrySender.sendData(new Register(selfHost,selfPort).getBytes());
 	}
-	
-	@Override
-	public void addContact(InetSocketAddress address) {
-		try {
-			contacts.put(address, new TCPSender(address));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
+		
 	@Override
 	public void onEvent(Event event) throws Exception {
 		switch (event.getType()) {
 		case MESSAGE: 
 			onMessageRecieved((Message)event);
-			break;
+			break;		
 		case REGISTER_RESPONSE: 
 			onRegisterResponseRecieved((Register)event);
 			break;
+		case REGISTER_REQUEST:
+			//possible if one Messaging node is establishing a duplex connection with the other
+			onRegisterRequestRecieved((Register)event);
+			break;
 		case MESSAGING_NODES_LIST: 
 			onMessagingNodesListRecieved((MessagingNodesList)event);
+			break;
+		case LINK_WEIGHTS:
+			onLinkWeightsRecieved((LinkWeights)event);
 			break;
 		default:
 			throw new Exception("Event of this type is not supported");
@@ -69,13 +74,41 @@ public class MessagingNode implements Node{
 		boolean success=true;
 		for(InetSocketAddress node : recievedMessagingNodesList.destinations) {
 			try {
-				contacts.put(node, new TCPSender(node));				
+				contacts.put(node, new TCPSender(node));	
+				registerWithOtherNode(node);
 			} catch (IOException e) {
-				success = false;
+				success = false;				
 				System.err.println("Failed to establish connection to "+node.toString());
+				if(contacts.containsKey(node))
+					contacts.remove(node);
 			}
 		}
 		if(success)System.out.println("All connections are established. Number of connections: "+contacts.size());
+	}
+	private void onRegisterRequestRecieved(Register registrationRequest) {
+		System.out.println(registrationRequest);
+		InetSocketAddress address = NodeUtilHelpers.constructAddress(registrationRequest.getRegisteringIp(),registrationRequest.getRegisteringPort());
+		// check if the node has been previously registered
+		if (contacts.containsKey(address)) {
+			contacts.get(address).sendData(new Register(false,"This node has already been registered").getBytes());
+			return;
+		}
+		if (!registrationRequest.IPverified) {
+			contacts.get(address).sendData(new Register(false,"Your IP mismatches the one in registration request").getBytes());
+			return;
+		}
+		
+		try {
+			contacts.put(address, new TCPSender(address));
+			contacts.get(address).sendData(new Register(true).getBytes());
+		} catch (IOException e) {
+			e.printStackTrace();
+			contacts.get(address).sendData(new Register(false,e.getMessage()).getBytes());
+		}
+	}
+	private void onLinkWeightsRecieved(LinkWeights recievedLinkWeights) {
+		//System.out.println(recievedLinkWeights);
+		this.linkWeights = recievedLinkWeights.getLinkWeights();
 	}
 	
 	public void sendMessage(InetSocketAddress dest, long payload) throws UnknownHostException {

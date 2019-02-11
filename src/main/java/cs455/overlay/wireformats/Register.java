@@ -8,7 +8,7 @@ import java.net.UnknownHostException;
 
 public class Register implements Event{
 	private EventType type;
-	
+	public boolean IPverified = false;
 	byte[] registeringIp;
 	public byte[] getRegisteringIp() {
 		return registeringIp;

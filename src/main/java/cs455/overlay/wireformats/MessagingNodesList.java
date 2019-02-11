@@ -23,6 +23,7 @@ public class MessagingNodesList implements Event {
 	public MessagingNodesList(byte[] encoded) {
 		ByteArrayInputStream bis = new ByteArrayInputStream(encoded);
 		try {
+			@SuppressWarnings("unused")
 			EventType type = EventType.values()[bis.read()];
 			int length = ByteEncoder.readEncodedInt(bis);
 			this.destinations = new HashSet<InetSocketAddress>();

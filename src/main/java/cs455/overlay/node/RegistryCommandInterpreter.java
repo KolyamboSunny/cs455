@@ -7,11 +7,12 @@ public class RegistryCommandInterpreter implements Runnable{
 	
 	private enum CommandCode {		
 		list_messaging_nodes,
-		setup_overlay
+		setup_overlay, send_overlay_link_weights
 		}
 	private CommandCode getCommandCode(String command) throws Exception {
 		if (command.equalsIgnoreCase("list-messaging-nodes")) return CommandCode.list_messaging_nodes;
 		if (command.equalsIgnoreCase("setup-overlay")) return CommandCode.setup_overlay;
+		if (command.equalsIgnoreCase("send-overlay-link-weights")) return CommandCode.send_overlay_link_weights;
 		throw new Exception("Command is not recognized");
 	}
 	
@@ -53,6 +54,9 @@ public class RegistryCommandInterpreter implements Runnable{
 	    	case setup_overlay:
 	    		int numberOfConnections = scanner.nextInt();
 	    		registry.setupOverlay(numberOfConnections);
+	    		break;
+	    	case send_overlay_link_weights:
+	    		registry.assignLinkWeights();
 	    		break;
 	    	}
 	    }

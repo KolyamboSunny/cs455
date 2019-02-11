@@ -13,11 +13,13 @@ public class Registry implements Node {
 	
 	TCPServerThread serverThread = null;
 	
-	HashMap<InetSocketAddress,TCPSender> registeredNodes = new HashMap<InetSocketAddress,TCPSender>();
+	Map<InetSocketAddress,TCPSender> registeredNodes = new HashMap<InetSocketAddress,TCPSender>();
 	public Set<InetSocketAddress> getRegisteredNodes() {
 		return registeredNodes.keySet();
 	}
-	
+	Map<InetSocketAddress,Collection<InetSocketAddress>> connectionsTable;
+	Map<InetSocketAddress, Map<InetSocketAddress,Integer>> linkWeights;
+		
 	public Registry(int registryPort) throws IOException {		
 		serverThread = new TCPServerThread(registryPort, this);
 		Thread sthread = new Thread(serverThread);
@@ -43,8 +45,15 @@ public class Registry implements Node {
 			registeredNodes.get(address).sendData(new Register(false,"This node has already been registered").getBytes());
 			return;
 		}
-		//TODO: check if the node ip matches the one in the registration request
-
+		if (!registrationRequest.IPverified) {
+			try {
+				(new TCPSender(address)).sendData(new Register(false,"Your IP mismatches the one in registration request").getBytes());
+			} catch (IOException e) {
+				System.out.println("Sending back registration complaints failed");
+			}
+			return;
+		}
+		
 		try {
 			registeredNodes.put(address, new TCPSender(address));
 			registeredNodes.get(address).sendData(new Register(true).getBytes());
@@ -56,14 +65,25 @@ public class Registry implements Node {
 	
 	public void setupOverlay(int numberOfConnections) {
 		OverlayCreator overlayCreator = new OverlayCreator();
-		Map<InetSocketAddress,Collection<InetSocketAddress>> connectionsTable = overlayCreator.buildConnectionsTable(registeredNodes.keySet(), numberOfConnections);
+		this.connectionsTable = overlayCreator.buildConnectionsTable(registeredNodes.keySet(), numberOfConnections);
 		for(InetSocketAddress node:connectionsTable.keySet()) {
 			TCPSender sender = registeredNodes.get(node);
 			MessagingNodesList instructions = new MessagingNodesList(connectionsTable.get(node));
 			sender.sendData(instructions.getBytes());
 		}
 	}
+	public void assignLinkWeights() {
+		this.linkWeights = new HashMap<InetSocketAddress, Map<InetSocketAddress,Integer>>();
+		for(InetSocketAddress srcNode : connectionsTable.keySet()) {
+			linkWeights.put(srcNode, new HashMap<InetSocketAddress,Integer>());			
+			for(InetSocketAddress destNode : connectionsTable.get(srcNode)) {
+				int weight =new Random().nextInt(10)+1;
+				linkWeights.get(srcNode).put(destNode,weight);
+			}
+		}
+	}
 	
+
 	public static void main(String[] args) {
 		int port = Integer.parseUnsignedInt(args[0]);
 		try {			
@@ -77,11 +97,4 @@ public class Registry implements Node {
 			e.printStackTrace();
 		}
 	}
-
-	@Override
-	public void addContact(InetSocketAddress address) {
-		// TODO Auto-generated method stub
-		
-	}
-
 }

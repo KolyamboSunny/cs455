@@ -8,6 +8,8 @@ import cs455.overlay.node.Node;
 import cs455.overlay.node.NodeUtilHelpers;
 import cs455.overlay.wireformats.Event;
 import cs455.overlay.wireformats.EventFactory;
+import cs455.overlay.wireformats.EventType;
+import cs455.overlay.wireformats.Register;
 
 public class TCPRecieverThread implements Runnable{
 
@@ -22,6 +24,18 @@ public class TCPRecieverThread implements Runnable{
 		
 	}
 
+	private boolean verifyRegistrationRequest(Register registrationRequest) {
+		//TODO: Implement this method correctly!!!
+		byte[] declaredInRequest =registrationRequest.getRegisteringIp();
+		byte[] actualIp= socket.getInetAddress().getAddress();
+		if (!java.util.Arrays.equals(declaredInRequest,actualIp)) {
+			System.err.println("Host "+socket.getInetAddress().getHostAddress()+" did not send its real IP: "+registrationRequest);
+			//return false;
+			return true;
+		}		
+		return true;
+	}
+	
 	@Override
 	public void run() {
 		int dataLength;
@@ -32,8 +46,11 @@ public class TCPRecieverThread implements Runnable{
 				byte[] data = new byte[dataLength];
 				inputStream.readFully(data, 0, dataLength);		
 				Event recievedEvent = EventFactory.getEvent(data);
+				if(recievedEvent.getType()==EventType.REGISTER_REQUEST) {
+					((Register)recievedEvent).IPverified = verifyRegistrationRequest((Register)recievedEvent);
+				}
 				node.onEvent(recievedEvent);
-				node.addContact(NodeUtilHelpers.constructAddress(socket.getInetAddress().getAddress(),socket.getPort()));
+				
 			}
 			catch(SocketException e) {
 				// TODO Auto-generated catch block
@@ -50,7 +67,6 @@ public class TCPRecieverThread implements Runnable{
 					e1.printStackTrace();
 				}
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}			
 		}
