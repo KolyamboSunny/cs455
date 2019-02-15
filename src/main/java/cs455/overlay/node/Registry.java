@@ -12,13 +12,13 @@ import cs455.overlay.wireformats.*;
 public class Registry implements Node {
 	
 	TCPServerThread serverThread = null;
-	
+	private Map<InetSocketAddress, Map<InetSocketAddress,Integer>> linkWeights;
+	private Map<InetSocketAddress, Collection<InetSocketAddress>> connectionsTable;
 	Map<InetSocketAddress,TCPSender> registeredNodes = new HashMap<InetSocketAddress,TCPSender>();
 	public Set<InetSocketAddress> getRegisteredNodes() {
 		return registeredNodes.keySet();
 	}
-	Map<InetSocketAddress,Collection<InetSocketAddress>> connectionsTable;
-	Map<InetSocketAddress, Map<InetSocketAddress,Integer>> linkWeights;
+
 		
 	public Registry(int registryPort) throws IOException {		
 		serverThread = new TCPServerThread(registryPort, this);
