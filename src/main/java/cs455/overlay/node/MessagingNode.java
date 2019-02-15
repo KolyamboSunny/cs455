@@ -7,14 +7,21 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
+import cs455.overlay.dijkstra.RoutingCache;
 import cs455.overlay.transport.*;
+import cs455.overlay.util.OverlayGraph;
 import cs455.overlay.wireformats.*;
 
 public class MessagingNode implements Node{
 	TCPServerThread serverThread = null;
 	TCPSender registrySender = null;
+	
 	Map<InetSocketAddress, TCPSender> contacts = new HashMap<InetSocketAddress, TCPSender>();
 	Map<InetSocketAddress, Map<InetSocketAddress,Integer>> linkWeights;
+	
+	OverlayGraph overlayGraph;
+	RoutingCache routingHandler;
+	
 	InetSocketAddress ownAddress;
 	public MessagingNode(String registryHost, int registryPort) throws IOException {						
 		serverThread = new TCPServerThread(this);
@@ -109,6 +116,13 @@ public class MessagingNode implements Node{
 	private void onLinkWeightsRecieved(LinkWeights recievedLinkWeights) {
 		//System.out.println(recievedLinkWeights);
 		this.linkWeights = recievedLinkWeights.getLinkWeights();
+		try {
+			this.overlayGraph = new OverlayGraph(linkWeights);
+			routingHandler = new RoutingCache(overlayGraph, ownAddress);
+			System.out.println("Link weights are recieved and processed. Ready to send messages.");
+		} catch (Exception e) {			// 
+			System.err.println("Could not contruct overlay graph with the retirieved weights");
+		}
 	}
 	
 	public void sendMessage(InetSocketAddress dest, long payload) throws UnknownHostException {

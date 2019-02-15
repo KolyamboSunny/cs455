@@ -1,18 +1,20 @@
 package cs455.overlay.node;
 
 import java.net.InetSocketAddress;
+import java.util.Map;
 import java.util.Scanner;
 
 public class RegistryCommandInterpreter implements Runnable{
 	
 	private enum CommandCode {		
-		list_messaging_nodes,
+		list_messaging_nodes, list_weights,
 		setup_overlay, send_overlay_link_weights
 		}
 	private CommandCode getCommandCode(String command) throws Exception {
 		if (command.equalsIgnoreCase("list-messaging-nodes")) return CommandCode.list_messaging_nodes;
 		if (command.equalsIgnoreCase("setup-overlay")) return CommandCode.setup_overlay;
 		if (command.equalsIgnoreCase("send-overlay-link-weights")) return CommandCode.send_overlay_link_weights;
+		if (command.equalsIgnoreCase("list-weights")) return CommandCode.list_weights;
 		throw new Exception("Command is not recognized");
 	}
 	
@@ -22,12 +24,28 @@ public class RegistryCommandInterpreter implements Runnable{
 		this.registry = registry;
 	}
 	
-	
+	private String printNode(InetSocketAddress node) {
+		return node.getHostString()+":"+node.getPort(); 
+	}
 	public void printMessagingNodes() {
 		for(InetSocketAddress registeredNode : registry.getRegisteredNodes() ) {
-			String nodeInfo= registeredNode.getHostString()+":"+registeredNode.getPort(); 
+			String nodeInfo= printNode(registeredNode); 
 			System.out.println(nodeInfo);
 		}
+	}
+	public void printLinkWeights() {
+		try {
+			Map<InetSocketAddress, Map<InetSocketAddress,Integer>> linkWeights = registry.getLinkWeights();
+			for(InetSocketAddress srcNode : linkWeights.keySet() ) {
+				for(InetSocketAddress destNode:linkWeights.get(srcNode).keySet()) {
+					int weight =linkWeights.get(srcNode).get(destNode); 
+					String linkInfo = printNode(srcNode)+" "+printNode(destNode)+" "+weight;
+					System.out.println(linkInfo);
+				}				
+			}
+		} catch (Exception e) {
+			System.err.println(e);
+		}		
 	}
 	
 	@Override
@@ -51,6 +69,9 @@ public class RegistryCommandInterpreter implements Runnable{
 	    	case list_messaging_nodes:
 	    		printMessagingNodes();
 	    		break;
+	    	case list_weights:
+	    		printLinkWeights();
+	    		break;	    		
 	    	case setup_overlay:
 	    		int numberOfConnections = scanner.nextInt();
 	    		registry.setupOverlay(numberOfConnections);

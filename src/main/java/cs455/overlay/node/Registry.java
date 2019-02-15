@@ -12,7 +12,15 @@ import cs455.overlay.wireformats.*;
 public class Registry implements Node {
 	
 	TCPServerThread serverThread = null;
-	private Map<InetSocketAddress, Map<InetSocketAddress,Integer>> linkWeights;
+	
+	private Map<InetSocketAddress, Map<InetSocketAddress,Integer>> linkWeights=null;
+	public Map<InetSocketAddress, Map<InetSocketAddress,Integer>> getLinkWeights() throws Exception{
+		if (linkWeights == null) {
+			throw new Exception("Link weights are not yet assigned! Setup overlay properly prior to doing that!");
+		}
+		return linkWeights;
+	}
+	
 	private Map<InetSocketAddress, Collection<InetSocketAddress>> connectionsTable;
 	Map<InetSocketAddress,TCPSender> registeredNodes = new HashMap<InetSocketAddress,TCPSender>();
 	public Set<InetSocketAddress> getRegisteredNodes() {
