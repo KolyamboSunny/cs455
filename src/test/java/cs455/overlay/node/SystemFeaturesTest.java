@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -46,10 +47,29 @@ public class SystemFeaturesTest {
 		
 	}
 	
+	private void testDirectMessaging(MessagingNode nodeFrom, MessagingNode nodeTo) throws InterruptedException, UnknownHostException{
+		int recieverBefore = nodeTo.recieveTracker;
+		int senderBefore = nodeFrom.recieveTracker;
+		long recievedSummationBefore = nodeTo.recieveSummation;
+		long sendSummationBefore = nodeFrom.sendSummation;
+		
+		nodeFrom.sendMessage(nodeTo.ownAddress);
+		Thread.sleep(2000);
+		int recieverAfter = nodeTo.recieveTracker;
+		int senderAfter = nodeFrom.sendTracker;
+		long recievedSummationAfter = nodeTo.recieveSummation;
+		long sendSummationAfter = nodeFrom.sendSummation;
+		
+		assert recieverAfter == recieverBefore+1;
+		assert senderAfter == senderBefore+1;
+		assert (sendSummationAfter-sendSummationBefore) == (recievedSummationAfter-recievedSummationBefore);
+	}
+	
 	@Test
 	public void systemTest() throws IOException, InterruptedException {
 		registrationTest();
 		setupOverlayTest();
 		assignLinkWeights();
+		testDirectMessaging(messagingNodes.get(0),messagingNodes.get(3));
 	}
 }

@@ -20,5 +20,9 @@ public class RoutingCache {
 			cachedRoutes.put(destination, ShortestPath.computeShortestRoute(source, destination, graph));
 		return cachedRoutes.get(destination);
 	}
-
+	public InetSocketAddress getNextNodeInRoute(InetSocketAddress destination) {
+		if(!this.cachedRoutes.containsKey(destination))
+			cachedRoutes.put(destination, ShortestPath.computeShortestRoute(source, destination, graph));
+		return cachedRoutes.get(destination).get(1);
+	}
 }

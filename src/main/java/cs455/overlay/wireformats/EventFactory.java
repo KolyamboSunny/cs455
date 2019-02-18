@@ -25,6 +25,8 @@ public class EventFactory {
 				return new MessagingNodesList(encodedEvent);
 			case LINK_WEIGHTS:
 				return new LinkWeights(encodedEvent);
+			case TASK_INITIATE:
+				return new TaskInitiate(encodedEvent);
 			default:
 				throw new Exception("Message type unknown");
 		}		

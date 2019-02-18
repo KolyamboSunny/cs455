@@ -89,8 +89,17 @@ public class Registry implements Node {
 				linkWeights.get(srcNode).put(destNode,weight);
 			}
 		}
+		LinkWeights messageLinkWeights = new LinkWeights(this.linkWeights);
+		for(TCPSender nodeCommunicator : this.registeredNodes.values()) {
+			nodeCommunicator.sendData(messageLinkWeights.getBytes());
+		}
 	}
-	
+	public void startMessageExchange(int numberOfRounds) {
+		TaskInitiate taskMessage = new TaskInitiate(numberOfRounds);
+		for(TCPSender nodeCommunicator : this.registeredNodes.values()) {
+			nodeCommunicator.sendData(taskMessage.getBytes());
+		}
+	}
 
 	public static void main(String[] args) {
 		int port = Integer.parseUnsignedInt(args[0]);

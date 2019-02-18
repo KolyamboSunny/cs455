@@ -8,13 +8,15 @@ public class RegistryCommandInterpreter implements Runnable{
 	
 	private enum CommandCode {		
 		list_messaging_nodes, list_weights,
-		setup_overlay, send_overlay_link_weights
+		setup_overlay, send_overlay_link_weights,
+		start_message_exchange
 		}
 	private CommandCode getCommandCode(String command) throws Exception {
 		if (command.equalsIgnoreCase("list-messaging-nodes")) return CommandCode.list_messaging_nodes;
 		if (command.equalsIgnoreCase("setup-overlay")) return CommandCode.setup_overlay;
 		if (command.equalsIgnoreCase("send-overlay-link-weights")) return CommandCode.send_overlay_link_weights;
 		if (command.equalsIgnoreCase("list-weights")) return CommandCode.list_weights;
+		if (command.equalsIgnoreCase("start")) return CommandCode.start_message_exchange;
 		throw new Exception("Command is not recognized");
 	}
 	
@@ -66,19 +68,23 @@ public class RegistryCommandInterpreter implements Runnable{
 	    	}
 	    	
 	    	switch (commandCode) {
-	    	case list_messaging_nodes:
-	    		printMessagingNodes();
-	    		break;
-	    	case list_weights:
-	    		printLinkWeights();
-	    		break;	    		
-	    	case setup_overlay:
-	    		int numberOfConnections = scanner.nextInt();
-	    		registry.setupOverlay(numberOfConnections);
-	    		break;
-	    	case send_overlay_link_weights:
-	    		registry.assignLinkWeights();
-	    		break;
+		    	case list_messaging_nodes:
+		    		printMessagingNodes();
+		    		break;
+		    	case list_weights:
+		    		printLinkWeights();
+		    		break;	    		
+		    	case setup_overlay:
+		    		int numberOfConnections = scanner.nextInt();
+		    		registry.setupOverlay(numberOfConnections);
+		    		break;
+		    	case send_overlay_link_weights:
+		    		registry.assignLinkWeights();
+		    		break;
+		    	case start_message_exchange:
+		    		int numberOfRounds = scanner.nextInt();
+		    		registry.startMessageExchange(numberOfRounds);
+		    		break;
 	    	}
 	    }
 	    

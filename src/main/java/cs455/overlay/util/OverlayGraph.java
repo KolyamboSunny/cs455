@@ -44,6 +44,19 @@ public class OverlayGraph {
 	public Collection<InetSocketAddress> getNodes(){
 		return duplexGraph.keySet();
 	}
+	public InetSocketAddress getRandomNode(InetSocketAddress self) throws Exception{
+		Collection<InetSocketAddress> allNodes = this.getNodes();
+		boolean foundSelf = allNodes.remove(self);
+		if(!foundSelf)
+			throw new Exception("Could not find itself among the known nodes");
+		//randomly select an index of a node to return
+		int toSelectIndex = (int) (Math.random() * allNodes.size());
+		//iterate through the collection until the randomly selected node is reached
+		for(InetSocketAddress node: allNodes) 
+			if (--toSelectIndex < 0) 
+				return node;
+		throw new Exception("The only known node was itself");		
+	}
 	public Map<InetSocketAddress,Integer> getNeighborsWithDistances(InetSocketAddress node){
 		return duplexGraph.get(node);
 	}

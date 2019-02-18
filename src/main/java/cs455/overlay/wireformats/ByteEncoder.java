@@ -11,6 +11,17 @@ import cs455.overlay.node.NodeUtilHelpers;
 
 public class ByteEncoder {
 
+	public static long readEncodedLong(ByteArrayInputStream bis) throws IOException {		
+		byte[] encodedLong = new byte[Long.BYTES];
+		bis.read(encodedLong,0,Long.BYTES);
+		long decodedLong = java.nio.ByteBuffer.wrap(encodedLong).getLong();
+		return decodedLong;
+	}
+	public static void writeEncodedLong(long toWrite, ByteArrayOutputStream bos) throws IOException {
+		byte[] encodedLong = ByteBuffer.allocate(Long.BYTES).putLong(toWrite).array();
+		bos.write(encodedLong);
+	}
+	
 	public static int readEncodedInt(ByteArrayInputStream bis) throws IOException {		
 		byte[] encodedInt = new byte[Integer.BYTES];
 		bis.read(encodedInt,0,Integer.BYTES);

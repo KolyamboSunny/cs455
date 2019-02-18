@@ -1,11 +1,11 @@
 package cs455.overlay.node;
 
 import java.io.IOException;
-import java.net.Socket;
 import java.net.UnknownHostException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import cs455.overlay.dijkstra.RoutingCache;
 import cs455.overlay.transport.*;
@@ -21,6 +21,13 @@ public class MessagingNode implements Node{
 	
 	OverlayGraph overlayGraph;
 	RoutingCache routingHandler;
+	
+	int recieveTracker = 0;
+	int sendTracker = 0;
+	int relayTracker = 0;
+	
+	long recieveSummation = 0;
+	long sendSummation = 0;
 	
 	InetSocketAddress ownAddress;
 	public MessagingNode(String registryHost, int registryPort) throws IOException {						
@@ -46,10 +53,7 @@ public class MessagingNode implements Node{
 		
 	@Override
 	public void onEvent(Event event) throws Exception {
-		switch (event.getType()) {
-		case MESSAGE: 
-			onMessageRecieved((Message)event);
-			break;		
+		switch (event.getType()) {		
 		case REGISTER_RESPONSE: 
 			onRegisterResponseRecieved((Register)event);
 			break;
@@ -63,6 +67,12 @@ public class MessagingNode implements Node{
 		case LINK_WEIGHTS:
 			onLinkWeightsRecieved((LinkWeights)event);
 			break;
+		case TASK_INITIATE:
+			onTaskInitiateRecieved((TaskInitiate)event);
+			break;
+		case MESSAGE:
+			onMessageRecieved((Message)event);
+			break;
 		default:
 			throw new Exception("Event of this type is not supported");
 			//break;
@@ -70,9 +80,7 @@ public class MessagingNode implements Node{
 		
 	}	
 
-	private void onMessageRecieved(Message recievedMessage) {
-		System.out.println(recievedMessage);
-	}
+	
 	private void onRegisterResponseRecieved(Register recievedRegisterResponse) {
 		System.out.println(recievedRegisterResponse);
 	}
@@ -124,23 +132,52 @@ public class MessagingNode implements Node{
 			System.err.println("Could not contruct overlay graph with the retirieved weights");
 		}
 	}
-	
-	public void sendMessage(InetSocketAddress dest, long payload) throws UnknownHostException {
-		Message msg = new Message(serverThread.getAddress().toString(),dest.toString(),payload);
-		Socket socket = new Socket();
-		try {
-			socket.connect(dest);
-			TCPSender sender = new TCPSender(socket);
-			sender.sendData(msg.getBytes());
-			socket.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	private void onTaskInitiateRecieved(TaskInitiate orderToStart) {
+		System.out.println(orderToStart);
 		
-		//sender.sendData(dataToSend);
+		int numberOfRounds = orderToStart.getNumberOfRounds();
+		
+		for(int round =0;round<numberOfRounds;round++) {
+			//randomly select other node to send message to
+			try {
+				InetSocketAddress dest = overlayGraph.getRandomNode(this.ownAddress);
+				sendMessage(dest);
+
+			} catch (Exception e) {
+				System.err.println(e);
+			}		
+		}
+	}
+	private void onMessageRecieved(Message recievedMessage) {
+		System.out.println(recievedMessage);
+		InetSocketAddress dest = recievedMessage.getDestination();
+		if (dest.equals(ownAddress)) {
+			int payload = recievedMessage.getPayload();
+			this.recieveTracker++;
+			this.recieveSummation+=payload;
+		}
+		else {
+			this.sendMessage(recievedMessage);
+			this.relayTracker++;
+		}
 	}
 	
+	public int sendMessage(InetSocketAddress dest) throws UnknownHostException {
+		int payload = new Random().nextInt();
+		this.sendMessage(dest, payload);
+		return payload;
+	}
+	public void sendMessage(InetSocketAddress dest, int payload) throws UnknownHostException {
+		Message msg = new Message(dest,payload);
+		this.sendTracker++;
+		this.sendSummation+=payload;
+		sendMessage(msg);
+	}
+	public void sendMessage(Message msg) {
+		InetSocketAddress nextNodeOnRoute = routingHandler.getNextNodeInRoute(msg.getDestination());
+		TCPSender senderToNextNode = this.contacts.get(nextNodeOnRoute);
+		senderToNextNode.sendData(msg.getBytes());
+	}
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
