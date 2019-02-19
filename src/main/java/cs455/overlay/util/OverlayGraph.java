@@ -3,6 +3,7 @@ package cs455.overlay.util;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 public class OverlayGraph {
@@ -45,7 +46,7 @@ public class OverlayGraph {
 		return duplexGraph.keySet();
 	}
 	public InetSocketAddress getRandomNode(InetSocketAddress self) throws Exception{
-		Collection<InetSocketAddress> allNodes = this.getNodes();
+		Collection<InetSocketAddress> allNodes = new HashSet(this.getNodes());
 		boolean foundSelf = allNodes.remove(self);
 		if(!foundSelf)
 			throw new Exception("Could not find itself among the known nodes");

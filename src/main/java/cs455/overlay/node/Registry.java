@@ -26,7 +26,7 @@ public class Registry implements Node {
 	public Set<InetSocketAddress> getRegisteredNodes() {
 		return registeredNodes.keySet();
 	}
-
+	Map<InetSocketAddress, Boolean> reportedDone = null;
 		
 	public Registry(int registryPort) throws IOException {		
 		serverThread = new TCPServerThread(registryPort, this);
@@ -39,6 +39,12 @@ public class Registry implements Node {
 		switch (event.getType()) {
 		case REGISTER_REQUEST: 
 			onRegistrationRequestRecieved((Register)event);
+			break;
+		case TASK_COMPLETE: 
+			onTaskCompleteRecieved((TaskComplete)event);
+			break;
+		case TRAFFIC_SUMMARY: 
+			onTrafficSummaryRecieved((TrafficSummaryResponse)event);
 			break;
 		default:
 			throw new Exception("Event of this type is not supported");
@@ -70,8 +76,29 @@ public class Registry implements Node {
 			registeredNodes.get(address).sendData(new Register(false,e.getMessage()).getBytes());
 		}
 	}
+	private void onTaskCompleteRecieved(TaskComplete taskCompleteReport) throws Exception {
+		//System.out.println(taskCompleteReport);
+		InetSocketAddress address = NodeUtilHelpers.constructAddress(taskCompleteReport.getIp(),taskCompleteReport.getPort());
+		if(!reportedDone.containsKey(address))
+			throw new Exception("Node "+address+" was not found in the reported done table");
+		this.reportedDone.put(address,true);
+		
+		requestTrafficSummary();
+	}
+	private synchronized void requestTrafficSummary() {
+		if (reportedDone.values().stream().allMatch(t -> t==true)) {
+			TrafficSummaryRequest summaryRequest = new TrafficSummaryRequest();
+			for(InetSocketAddress node : this.registeredNodes.keySet()) {
+				registeredNodes.get(node).sendData(summaryRequest.getBytes());
+				this.reportedDone.put(node,false);
+			}
+		}
+	}
+	private void onTrafficSummaryRecieved(TrafficSummaryResponse trafficSummary) {
+		System.out.println(trafficSummary);
+	}
 	
-	public void setupOverlay(int numberOfConnections) {
+public void setupOverlay(int numberOfConnections) {
 		OverlayCreator overlayCreator = new OverlayCreator();
 		this.connectionsTable = overlayCreator.buildConnectionsTable(registeredNodes.keySet(), numberOfConnections);
 		for(InetSocketAddress node:connectionsTable.keySet()) {
@@ -99,6 +126,11 @@ public class Registry implements Node {
 		for(TCPSender nodeCommunicator : this.registeredNodes.values()) {
 			nodeCommunicator.sendData(taskMessage.getBytes());
 		}
+		//initiate status checking map if it did not exist earlier
+		this.reportedDone=new HashMap<InetSocketAddress, Boolean>();
+		for(InetSocketAddress node : registeredNodes.keySet()) 
+			this.reportedDone.put(node, false);
+				
 	}
 
 	public static void main(String[] args) {

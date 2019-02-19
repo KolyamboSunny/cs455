@@ -3,12 +3,9 @@ package cs455.overlay.node;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
 import org.junit.Test;
 
 public class SystemFeaturesTest {
@@ -64,12 +61,18 @@ public class SystemFeaturesTest {
 		assert senderAfter == senderBefore+1;
 		assert (sendSummationAfter-sendSummationBefore) == (recievedSummationAfter-recievedSummationBefore);
 	}
-	
+	private void testBroadMessaging() throws InterruptedException {
+		registry.startMessageExchange(5);
+		Thread.sleep(2000);
+		
+		
+	}
 	@Test
 	public void systemTest() throws IOException, InterruptedException {
 		registrationTest();
 		setupOverlayTest();
 		assignLinkWeights();
 		testDirectMessaging(messagingNodes.get(0),messagingNodes.get(3));
+		
 	}
 }

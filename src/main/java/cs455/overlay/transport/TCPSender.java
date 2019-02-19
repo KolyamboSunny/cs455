@@ -28,8 +28,10 @@ public class TCPSender{
 	}
 	
 
-	public void sendData(byte[] dataToSend) {
+	public synchronized void sendData(byte[] dataToSend) {
 		int dataLength = dataToSend.length;
+		if(dataLength ==0 )
+			return;
 		try {
 			sendingStream.writeInt(dataLength);
 			sendingStream.write(dataToSend,0,dataLength);

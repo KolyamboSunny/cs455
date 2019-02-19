@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.net.*;
 
 import cs455.overlay.node.Node;
-import cs455.overlay.node.NodeUtilHelpers;
 import cs455.overlay.wireformats.Event;
 import cs455.overlay.wireformats.EventFactory;
 import cs455.overlay.wireformats.EventType;
@@ -43,6 +42,8 @@ public class TCPRecieverThread implements Runnable{
 		while (socket!=null && !socket.isClosed()) {
 			try {
 				dataLength =  inputStream.readInt();
+				if(dataLength ==0 )
+					continue;
 				byte[] data = new byte[dataLength];
 				inputStream.readFully(data, 0, dataLength);		
 				Event recievedEvent = EventFactory.getEvent(data);

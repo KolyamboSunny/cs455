@@ -18,6 +18,7 @@ public class MessagingNode implements Node{
 	
 	Map<InetSocketAddress, TCPSender> contacts = new HashMap<InetSocketAddress, TCPSender>();
 	Map<InetSocketAddress, Map<InetSocketAddress,Integer>> linkWeights;
+
 	
 	OverlayGraph overlayGraph;
 	RoutingCache routingHandler;
@@ -73,6 +74,9 @@ public class MessagingNode implements Node{
 		case MESSAGE:
 			onMessageRecieved((Message)event);
 			break;
+		case PULL_TRAFFIC_SUMMARY:
+			onTrafficSummaryRequest((TrafficSummaryRequest)event);
+			break;		
 		default:
 			throw new Exception("Event of this type is not supported");
 			//break;
@@ -136,7 +140,6 @@ public class MessagingNode implements Node{
 		System.out.println(orderToStart);
 		
 		int numberOfRounds = orderToStart.getNumberOfRounds();
-		
 		for(int round =0;round<numberOfRounds;round++) {
 			//randomly select other node to send message to
 			try {
@@ -147,14 +150,21 @@ public class MessagingNode implements Node{
 				System.err.println(e);
 			}		
 		}
+		
+		//inform registry that the task is done
+		TaskComplete report = new TaskComplete(this.ownAddress.getAddress().getAddress(),this.ownAddress.getPort());
+		registrySender.sendData(report.getBytes());
 	}
 	private void onMessageRecieved(Message recievedMessage) {
-		System.out.println(recievedMessage);
+		System.out.println("Recieved: "+recievedMessage);
 		InetSocketAddress dest = recievedMessage.getDestination();
 		if (dest.equals(ownAddress)) {
 			int payload = recievedMessage.getPayload();
 			this.recieveTracker++;
 			this.recieveSummation+=payload;
+			
+				
+			
 		}
 		else {
 			this.sendMessage(recievedMessage);
@@ -171,12 +181,29 @@ public class MessagingNode implements Node{
 		Message msg = new Message(dest,payload);
 		this.sendTracker++;
 		this.sendSummation+=payload;
+		System.out.println("Sent: "+msg);
 		sendMessage(msg);
 	}
 	public void sendMessage(Message msg) {
 		InetSocketAddress nextNodeOnRoute = routingHandler.getNextNodeInRoute(msg.getDestination());
 		TCPSender senderToNextNode = this.contacts.get(nextNodeOnRoute);
 		senderToNextNode.sendData(msg.getBytes());
+	}
+	
+	private void onTrafficSummaryRequest(TrafficSummaryRequest trafficSummaryRequest) {
+		TrafficSummaryResponse response = new TrafficSummaryResponse(this.ownAddress.getAddress().getAddress(),this.ownAddress.getPort(),
+				sendTracker, sendSummation,
+				recieveTracker, recieveSummation,
+				relayTracker);
+		
+		registrySender.sendData(response.getBytes());
+		
+		recieveTracker = 0;
+		sendTracker = 0;
+		relayTracker = 0;
+		
+		recieveSummation = 0;
+		sendSummation = 0;
 	}
 	
 	public static void main(String[] args) {

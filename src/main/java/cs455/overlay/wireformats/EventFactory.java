@@ -2,13 +2,23 @@ package cs455.overlay.wireformats;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class EventFactory {
 	
 	private static EventType getEventType(byte[] encodedEvent) throws IOException, ClassNotFoundException {
 		ByteArrayInputStream bis = new ByteArrayInputStream(encodedEvent);
-		  
-		EventType type = EventType.values()[bis.read()];;
+		int eventTypeIndex = bis.read();
+		EventType type = null;
+		
+		try {
+			
+			type = EventType.values()[eventTypeIndex];
+		}catch(Exception e) {
+			System.err.println("Found array element out of bound: "+eventTypeIndex);
+			System.err.println(Arrays.toString(encodedEvent));
+		}
+		bis.close();
 		return type;		
 	}
 	
@@ -27,6 +37,12 @@ public class EventFactory {
 				return new LinkWeights(encodedEvent);
 			case TASK_INITIATE:
 				return new TaskInitiate(encodedEvent);
+			case TASK_COMPLETE:
+				return new TaskComplete(encodedEvent);
+			case PULL_TRAFFIC_SUMMARY:
+				return new TrafficSummaryRequest(encodedEvent);
+			case TRAFFIC_SUMMARY:
+				return new TrafficSummaryResponse(encodedEvent);
 			default:
 				throw new Exception("Message type unknown");
 		}		
