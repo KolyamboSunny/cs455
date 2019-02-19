@@ -7,6 +7,7 @@ import java.util.*;
 
 import cs455.overlay.transport.*;
 import cs455.overlay.util.OverlayCreator;
+import cs455.overlay.util.StatisticsCollectorAndDisplay;
 import cs455.overlay.wireformats.*;
 
 public class Registry implements Node {
@@ -27,7 +28,7 @@ public class Registry implements Node {
 		return registeredNodes.keySet();
 	}
 	Map<InetSocketAddress, Boolean> reportedDone = null;
-		
+	ArrayList<TrafficSummaryResponse> gatheredStats = null;
 	public Registry(int registryPort) throws IOException {		
 		serverThread = new TCPServerThread(registryPort, this);
 		Thread sthread = new Thread(serverThread);
@@ -94,8 +95,13 @@ public class Registry implements Node {
 			}
 		}
 	}
-	private void onTrafficSummaryRecieved(TrafficSummaryResponse trafficSummary) {
-		System.out.println(trafficSummary);
+	private synchronized void onTrafficSummaryRecieved(TrafficSummaryResponse trafficSummary) {
+		if (gatheredStats == null)
+			gatheredStats = new ArrayList<TrafficSummaryResponse>();
+		gatheredStats.add(trafficSummary);
+		if(gatheredStats.size()==registeredNodes.size()) {
+			StatisticsCollectorAndDisplay.printExperimentStats(gatheredStats);
+		}
 	}
 	
 public void setupOverlay(int numberOfConnections) {
