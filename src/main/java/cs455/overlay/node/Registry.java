@@ -101,6 +101,7 @@ public class Registry implements Node {
 		gatheredStats.add(trafficSummary);
 		if(gatheredStats.size()==registeredNodes.size()) {
 			StatisticsCollectorAndDisplay.printExperimentStats(gatheredStats);
+			gatheredStats = null;
 		}
 	}
 	

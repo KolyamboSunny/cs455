@@ -86,7 +86,7 @@ public class MessagingNode implements Node{
 
 	
 	private void onRegisterResponseRecieved(Register recievedRegisterResponse) {
-		System.out.println(recievedRegisterResponse);
+		//System.out.println(recievedRegisterResponse);
 	}
 	private void onMessagingNodesListRecieved(MessagingNodesList recievedMessagingNodesList) {				
 		//establish connections to the desired nodes
@@ -105,7 +105,7 @@ public class MessagingNode implements Node{
 		if(success)System.out.println("All connections are established. Number of connections: "+contacts.size());
 	}
 	private void onRegisterRequestRecieved(Register registrationRequest) {
-		System.out.println(registrationRequest);
+		//System.out.println(registrationRequest);
 		InetSocketAddress address = NodeUtilHelpers.constructAddress(registrationRequest.getRegisteringIp(),registrationRequest.getRegisteringPort());
 		// check if the node has been previously registered
 		if (contacts.containsKey(address)) {
@@ -137,7 +137,7 @@ public class MessagingNode implements Node{
 		}
 	}
 	private void onTaskInitiateRecieved(TaskInitiate orderToStart) {
-		System.out.println(orderToStart);
+		//System.out.println(orderToStart);
 		
 		int numberOfRounds = orderToStart.getNumberOfRounds();
 		for(int round =0;round<numberOfRounds;round++) {
@@ -156,7 +156,7 @@ public class MessagingNode implements Node{
 		registrySender.sendData(report.getBytes());
 	}
 	private void onMessageRecieved(Message recievedMessage) {
-		System.out.println("Recieved: "+recievedMessage);
+		//System.out.println("Recieved: "+recievedMessage);
 		InetSocketAddress dest = recievedMessage.getDestination();
 		if (dest.equals(ownAddress)) {
 			int payload = recievedMessage.getPayload();
@@ -181,7 +181,7 @@ public class MessagingNode implements Node{
 		Message msg = new Message(dest,payload);
 		this.sendTracker++;
 		this.sendSummation+=payload;
-		System.out.println("Sent: "+msg);
+		//System.out.println("Sent: "+msg);
 		sendMessage(msg);
 	}
 	public void sendMessage(Message msg) {
