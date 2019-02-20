@@ -55,7 +55,7 @@ public class Registry implements Node {
 		}
 		
 	}
-	private void onRegistrationRequestRecieved(Register registrationRequest) throws UnknownHostException {
+	private synchronized void onRegistrationRequestRecieved(Register registrationRequest) throws UnknownHostException {
 		System.out.println(registrationRequest);
 		InetSocketAddress address = NodeUtilHelpers.constructAddress(registrationRequest.getRegisteringIp(),registrationRequest.getRegisteringPort());
 		// check if the node has been previously registered
@@ -76,7 +76,7 @@ public class Registry implements Node {
 			registeredNodes.put(address, new TCPSender(address));
 			registeredNodes.get(address).sendData(new Register(true).getBytes());
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.err.println("Failed to register node "+address);
 			registeredNodes.get(address).sendData(new Register(false,e.getMessage()).getBytes());
 		}
 	}
