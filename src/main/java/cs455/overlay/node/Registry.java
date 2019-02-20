@@ -113,7 +113,7 @@ public class Registry implements Node {
 	private synchronized void requestTrafficSummary() {
 		if (reportedDone.values().stream().allMatch(t -> t==true)) {
 			try {
-				Thread.sleep(10000);
+				Thread.sleep(15000);
 				
 				TrafficSummaryRequest summaryRequest = new TrafficSummaryRequest();
 				for(InetSocketAddress node : this.registeredNodes.keySet()) {

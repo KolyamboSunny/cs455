@@ -35,7 +35,7 @@ public class SystemFeaturesTest {
 		MessagingNode toDeregister = new MessagingNode(registryIp, registryPort);
 		Thread.sleep(2000);
 		assert registry.registeredNodes.size() == numberOfMessagingNodes+1;
-		toDeregister.deregister(registryIp, registryPort);
+		toDeregister.deregister();
 		Thread.sleep(2000);
 		assert registry.registeredNodes.size() == numberOfMessagingNodes;
 	}

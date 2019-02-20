@@ -60,7 +60,7 @@ public class LinkWeights implements Event {
 				for (InetSocketAddress destNode: this.linkWeights.get(srcNode).keySet()) {
 					ByteEncoder.writeEncodedAddress(srcNode, bos);
 					ByteEncoder.writeEncodedAddress(destNode, bos);
-					ByteEncoder.writeEncodedInt(this.countNumberOfLinks(), bos);
+					ByteEncoder.writeEncodedInt(this.linkWeights.get(srcNode).get(destNode), bos);
 				}
 			}
 			bos.flush();

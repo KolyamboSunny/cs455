@@ -3,7 +3,9 @@ package cs455.overlay.node;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -20,7 +22,7 @@ public class MessagingNode implements Node{
 	Map<InetSocketAddress, Map<InetSocketAddress,Integer>> linkWeights;
 
 	
-	OverlayGraph overlayGraph;
+	public OverlayGraph overlayGraph;
 	RoutingCache routingHandler;
 	
 	int recieveTracker = 0;
@@ -52,7 +54,7 @@ public class MessagingNode implements Node{
 		this.registrySender.sendData(new Register(selfHost,selfPort).getBytes());
 	}
 	
-	public void deregister(String registryHost, int registryPort) throws UnknownHostException, IOException {
+	public void deregister() throws UnknownHostException, IOException {
 		byte[] selfHost = this.serverThread.getAddress().getAddress();
 		int selfPort = this.serverThread.getPort();
 		this.registrySender.sendData(new Deregister(selfHost,selfPort).getBytes());
@@ -184,7 +186,16 @@ public class MessagingNode implements Node{
 			this.relayTracker++;
 		}
 	}
-	
+	public List<List<InetSocketAddress>> getRoutes() throws Exception{
+		if (overlayGraph==null)
+			throw new Exception("Link weights were not yet acquired.");
+		List<List<InetSocketAddress>> result = new ArrayList<List<InetSocketAddress>>();
+		for(InetSocketAddress destination:overlayGraph.getNodes()) {
+			result.add(routingHandler.computeShortestRoute(destination));
+		}
+			
+		return result;
+	}
 	public int sendMessage(InetSocketAddress dest) throws UnknownHostException {
 		int payload = new Random().nextInt();
 		this.sendMessage(dest, payload);
@@ -224,9 +235,9 @@ public class MessagingNode implements Node{
 		String registryHost = args[0];
 		int registryPort = Integer.parseInt(args[1]);
 		try {
-			@SuppressWarnings("unused")
 			MessagingNode m = new MessagingNode(registryHost,registryPort);
-			
+			Thread sthread = new Thread(new MessagingNodeCommandInterpreter(m));
+			sthread.start();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
