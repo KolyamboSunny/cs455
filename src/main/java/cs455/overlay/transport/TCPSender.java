@@ -27,7 +27,14 @@ public class TCPSender{
 		this(address.getHostString(),address.getPort());
 	}
 	
-
+	public void closeConnection() {
+		try {
+			socket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	public synchronized void sendData(byte[] dataToSend) {
 		int dataLength = dataToSend.length;
 		if(dataLength ==0 )

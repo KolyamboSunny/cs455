@@ -51,12 +51,21 @@ public class MessagingNode implements Node{
 		int selfPort = this.serverThread.getPort();
 		this.registrySender.sendData(new Register(selfHost,selfPort).getBytes());
 	}
+	
+	public void deregister(String registryHost, int registryPort) throws UnknownHostException, IOException {
+		byte[] selfHost = this.serverThread.getAddress().getAddress();
+		int selfPort = this.serverThread.getPort();
+		this.registrySender.sendData(new Deregister(selfHost,selfPort).getBytes());
+	}
 		
 	@Override
 	public void onEvent(Event event) throws Exception {
 		switch (event.getType()) {		
 		case REGISTER_RESPONSE: 
 			onRegisterResponseRecieved((Register)event);
+			break;
+		case DEREGISTER_RESPONSE: 
+			onDeregisterResponseRecieved((Deregister)event);
 			break;
 		case REGISTER_REQUEST:
 			//possible if one Messaging node is establishing a duplex connection with the other
@@ -87,6 +96,10 @@ public class MessagingNode implements Node{
 	
 	private void onRegisterResponseRecieved(Register recievedRegisterResponse) {
 		//System.out.println(recievedRegisterResponse);
+	}
+	private void onDeregisterResponseRecieved(Deregister recievedDeregisterResponse) {
+		this.registrySender.closeConnection();
+		System.err.println(recievedDeregisterResponse);
 	}
 	private void onMessagingNodesListRecieved(MessagingNodesList recievedMessagingNodesList) {				
 		//establish connections to the desired nodes

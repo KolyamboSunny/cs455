@@ -1,6 +1,7 @@
 package cs455.overlay.transport;
 
 import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.*;
 
@@ -53,7 +54,7 @@ public class TCPRecieverThread implements Runnable{
 				node.onEvent(recievedEvent);
 				
 			}
-			catch(SocketException e) {
+			catch(SocketException | EOFException e) {
 				// TODO Auto-generated catch block
 				System.err.println("Connection to host "+socket.getInetAddress().getHostAddress()+":"+socket.getPort()+" did not terminate gracefully");
 				break;

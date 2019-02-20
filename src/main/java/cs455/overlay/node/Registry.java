@@ -41,6 +41,9 @@ public class Registry implements Node {
 		case REGISTER_REQUEST: 
 			onRegistrationRequestRecieved((Register)event);
 			break;
+		case DEREGISTER_REQUEST: 
+			onDeregistrationRequestRecieved((Deregister)event);
+			break;
 		case TASK_COMPLETE: 
 			onTaskCompleteRecieved((TaskComplete)event);
 			break;
@@ -77,6 +80,27 @@ public class Registry implements Node {
 			registeredNodes.get(address).sendData(new Register(false,e.getMessage()).getBytes());
 		}
 	}
+	
+	private void onDeregistrationRequestRecieved(Deregister deregistrationRequest) throws UnknownHostException {
+		System.out.println(deregistrationRequest);
+		InetSocketAddress address = NodeUtilHelpers.constructAddress(deregistrationRequest.getDeregisteringIp(),deregistrationRequest.getDeregisteringPort());
+		// check if the node has been previously registered
+		if (!registeredNodes.containsKey(address)) {
+			registeredNodes.get(address).sendData(new Deregister(false,"Deregidtering node has not been found").getBytes());
+			return;
+		}
+		registeredNodes.remove(address);
+		/*if (!deregistrationRequest.IPverified) {
+			try {
+				(new TCPSender(address)).sendData(new Deregister(false,"Your IP mismatches the one in registration request").getBytes());
+			} catch (IOException e) {
+				System.out.println("Sending back deregistration complaints failed");
+			}
+			return;
+		}*/
+				
+						
+	}
 	private void onTaskCompleteRecieved(TaskComplete taskCompleteReport) throws Exception {
 		//System.out.println(taskCompleteReport);
 		InetSocketAddress address = NodeUtilHelpers.constructAddress(taskCompleteReport.getIp(),taskCompleteReport.getPort());
@@ -88,11 +112,18 @@ public class Registry implements Node {
 	}
 	private synchronized void requestTrafficSummary() {
 		if (reportedDone.values().stream().allMatch(t -> t==true)) {
-			TrafficSummaryRequest summaryRequest = new TrafficSummaryRequest();
-			for(InetSocketAddress node : this.registeredNodes.keySet()) {
-				registeredNodes.get(node).sendData(summaryRequest.getBytes());
-				this.reportedDone.put(node,false);
+			try {
+				Thread.sleep(10000);
+				
+				TrafficSummaryRequest summaryRequest = new TrafficSummaryRequest();
+				for(InetSocketAddress node : this.registeredNodes.keySet()) {
+					registeredNodes.get(node).sendData(summaryRequest.getBytes());
+					this.reportedDone.put(node,false);
+				}
+			} catch (InterruptedException e) {
+				System.err.println("Register was interrupted when waiting for an experiment to end! Traffic summary will not be obtained.");
 			}
+			
 		}
 	}
 	private synchronized void onTrafficSummaryRecieved(TrafficSummaryResponse trafficSummary) {
@@ -100,8 +131,7 @@ public class Registry implements Node {
 			gatheredStats = new ArrayList<TrafficSummaryResponse>();
 		gatheredStats.add(trafficSummary);
 		if(gatheredStats.size()==registeredNodes.size()) {
-			StatisticsCollectorAndDisplay.printExperimentStats(gatheredStats);
-			gatheredStats = null;
+			StatisticsCollectorAndDisplay.printExperimentStats(gatheredStats);			
 		}
 	}
 	
@@ -129,6 +159,7 @@ public void setupOverlay(int numberOfConnections) {
 		}
 	}
 	public void startMessageExchange(int numberOfRounds) {
+		gatheredStats = null;
 		TaskInitiate taskMessage = new TaskInitiate(numberOfRounds);
 		for(TCPSender nodeCommunicator : this.registeredNodes.values()) {
 			nodeCommunicator.sendData(taskMessage.getBytes());
