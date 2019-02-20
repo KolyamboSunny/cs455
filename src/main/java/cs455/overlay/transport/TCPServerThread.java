@@ -22,7 +22,7 @@ public class TCPServerThread implements Runnable{
 	        try {
 	        	serverSocket = new ServerSocket(port);
 	        	this.port = port;
-	        	System.out.println("Server thread initialized: "+serverSocket.getLocalSocketAddress());
+	        	System.out.println("Server thread initialized: "+serverSocket.getInetAddress().getHostAddress());
 	        	return;
 	        } catch (IOException ex) {
 	            continue; // try next port
@@ -41,7 +41,7 @@ public class TCPServerThread implements Runnable{
 			this.port = port;
 			System.out.println("Server thread initialized: "+serverSocket.getInetAddress().getHostAddress());
 		}catch(java.net.BindException e) {
-			System.out.println("Server thread failed to initialize on port: "+port);
+			System.err.println("Server thread failed to initialize on port: "+port);
 		}
 	}
 	

@@ -29,7 +29,7 @@ public class TCPRecieverThread implements Runnable{
 		byte[] declaredInRequest =registrationRequest.getRegisteringIp();
 		byte[] actualIp= socket.getInetAddress().getAddress();
 		if (!java.util.Arrays.equals(declaredInRequest,actualIp)) {
-			System.err.println("Host "+socket.getInetAddress().getHostAddress()+" did not send its real IP: "+registrationRequest);
+			System.err.println("Host "+socket.getInetAddress().getHostAddress()+" did not match its advertised IP: "+registrationRequest);
 			//return false;
 			return true;
 		}		
@@ -56,7 +56,7 @@ public class TCPRecieverThread implements Runnable{
 			}
 			catch(SocketException | EOFException e) {
 				// TODO Auto-generated catch block
-				System.err.println("Connection to host "+socket.getInetAddress().getHostAddress()+":"+socket.getPort()+" did not terminate gracefully");
+				System.err.println("Connection to host "+socket.getInetAddress().getHostAddress()+":"+socket.getPort()+" terminated");
 				break;
 			}
 			catch(IOException e) {
