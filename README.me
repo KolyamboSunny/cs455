@@ -1,0 +1,20 @@
+1) unpack the tar file
+% tar -xvf Nikolai-Sannikov-HW1-PC.tar
+
+2) build the code using gradle (optional)
+% gradle build -x test
+or 
+% gradle build
+
+3)switch to the build root directory
+% cd build/classes/java/main
+
+4) run registry
+% java cs455.overlay.node.Registry <port_number>
+
+5) run messaging node
+% java cs455.overlay.node.MessagingNode <Registry_host> <Registry_port_number>
+
+WARNING: some message delivery times may exceed the registry waiting time, and it mostly depends on a random chance.
+Therefore, the stats send and recieved fields may be slightly different, and gradle build tests may occasionally fail.
+Decreasing the number of rounds will minimize this effect.
