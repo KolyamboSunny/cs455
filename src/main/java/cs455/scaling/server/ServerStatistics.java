@@ -105,10 +105,15 @@ public class ServerStatistics {
 		public void run() {
 			while(true) {
 				String report = "";
+				int numberOfConnections = stats.numberOfConnections();
+				
 				report+="Server Throughput: "+(double)numberOfTasks()/reportTimespan*1000 +"messages/s, ";
-				report+="Active Client Connections: " + stats.numberOfConnections()+",";
-				report+="Mean Per-client Throughput: " + stats.meanThroughput()+"messages/s, ";
-				report+="Std. Div. Of Per-client Throughput: " + stats.stdDivThroughput()+"messages/s, ";
+				report+="Active Client Connections: " + numberOfConnections+",";
+				
+				if(numberOfConnections>0) {
+					report+="Mean Per-client Throughput: " + stats.meanThroughput()+"messages/s, ";
+					report+="Std. Div. Of Per-client Throughput: " + stats.stdDivThroughput()+"messages/s";
+				}
 				
 				System.out.println(report);
 				stats.resetCounters();

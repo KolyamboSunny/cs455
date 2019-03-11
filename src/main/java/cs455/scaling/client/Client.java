@@ -22,6 +22,8 @@ public class Client {
 	Selector selector;
 	SocketChannel channel;
 	
+	ClientStatistics stats = new ClientStatistics();
+	
 	public Client(String serverHost,int serverPort,int messageRate) {
 		this.timeBetweenChallenges = 1000/messageRate;
 		this.serverAddress = new InetSocketAddress(serverHost,serverPort);
@@ -47,10 +49,11 @@ public class Client {
 			
 			this.sender = new SenderThread(this.channel, this.selector);
 			this.channel.register(selector, SelectionKey.OP_CONNECT);
+			stats.start();
+			
 			this.startChallenging();
 			
-			
-			
+
 		} catch (IOException connectToServerException) {
 			System.err.println("Client could not connect to a server at "+this.serverAddress);
 			Thread.sleep(5000);
@@ -62,8 +65,9 @@ public class Client {
 		//int limit =5;
 		while (true) {
 			nextChallenge();
+			stats.incrementSent();
 			//limit --;
-			Thread listener = new Thread(new ResponseHandler(channel, selector,sentHashes));			
+			Thread listener = new Thread(new ResponseHandler(channel, selector,sentHashes,stats));			
 			listener.start();
 			try {
 				Thread.sleep(this.timeBetweenChallenges);				

@@ -16,13 +16,14 @@ public class ResponseHandler implements Runnable {
 	SocketChannel channel;
 	Selector selector;
 	LinkedList<Hash> sentHashes;
-	
+	ClientStatistics stats;
 	int SHA1Length = 160/8;
 	
-	public ResponseHandler(SocketChannel channel, Selector selector,LinkedList<Hash> sentHashes){
+	public ResponseHandler(SocketChannel channel, Selector selector,LinkedList<Hash> sentHashes, ClientStatistics stats){
 		this.channel = channel;
 		this.selector = selector;
 		this.sentHashes = sentHashes;
+		this.stats = stats;
 	}
 
 	@Override
@@ -61,6 +62,7 @@ public class ResponseHandler implements Runnable {
 				for(Hash challenge : sentHashes) {
 					if (challenge.verify(response)) {
 						sentHashes.remove(challenge);
+						this.stats.incrementRecieved();
 						break;
 					}
 				}
