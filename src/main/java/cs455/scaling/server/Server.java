@@ -46,24 +46,26 @@ public class Server{
 			Set<SelectionKey> keySet= selector.selectedKeys();
 			Iterator<SelectionKey> keys = keySet.iterator();
 			while(keys.hasNext()) {
-				SelectionKey key = keys.next();
-				if(key.isAcceptable()) {
-					SocketChannel client = serverChannel.accept();
-					if (client!=null) {
-						client.configureBlocking(false);
-						synchronized(stats) {
-							stats.addConnection(client);
+				synchronized(keys) {
+					SelectionKey key = keys.next();
+					if(key.isAcceptable()) {
+						SocketChannel client = serverChannel.accept();
+						if (client!=null) {
+							client.configureBlocking(false);
+							synchronized(stats) {
+								stats.addConnection(client);
+							}
+							synchronized(selector) {
+								client.register(selector, SelectionKey.OP_READ);
+							}	
+							System.out.println("Connection accepted: "+client.getLocalAddress());
 						}
-						synchronized(selector) {
-							client.register(selector, SelectionKey.OP_READ);
-						}	
-						System.out.println("Connection accepted: "+client.getLocalAddress());
 					}
+					if(key.isReadable()) {
+						this.read(key);
+					}
+					keys.remove();
 				}
-				if(key.isReadable()) {
-					this.read(key);
-				}
-				//keys.remove();
 			}			
 		
 		}
