@@ -29,6 +29,11 @@ public class ClientStatistics {
 		return recievedCounter;
 	}
 	
+	public synchronized void resetCounters() {
+		this.recievedCounter=0;
+		this.sentCounter = 0;
+	}
+	
 	private class ReportPrinter implements Runnable{
 		ClientStatistics stats;
 		long reportTimespan = 20000;
@@ -46,8 +51,11 @@ public class ClientStatistics {
 				Date date = new Date();
 				report+= "["+dateFormat.format(date) +"] ";
 				
-				report+= "Total Sent Count: "+stats.getSent()+",";
-				report+= "Total Recieved Count: "+stats.getRecieved();
+				synchronized(stats) {
+					report+= "Total Sent Count: "+stats.getSent()+",";
+					report+= "Total Recieved Count: "+stats.getRecieved();				
+					stats.resetCounters();
+				}
 				System.out.println(report);
 				try {
 					Thread.sleep(reportTimespan);
