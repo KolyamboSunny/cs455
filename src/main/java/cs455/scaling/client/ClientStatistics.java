@@ -1,5 +1,7 @@
 package cs455.scaling.client;
 
+import java.time.format.DateTimeFormatter;
+
 public class ClientStatistics {
 	long sentCounter=0;
 	long recievedCounter=0;
@@ -37,6 +39,7 @@ public class ClientStatistics {
 		public void run() {
 			while(true) {
 				String report = "";
+				report+= "["+DateTimeFormatter.ISO_DATE_TIME.toString() +"] ";
 				report+= "Total Sent Count: "+stats.getSent()+",";
 				report+= "Total Recieved Count: "+stats.getRecieved();
 				System.out.println(report);

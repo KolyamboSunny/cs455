@@ -72,29 +72,30 @@ public class Server{
 	}
 	private void read(SelectionKey key){
 		SocketChannel channel = (SocketChannel)key.channel();
-		ByteBuffer readBuffer = ByteBuffer.allocate(this.payloadLength);
-		int read =0;
-		try {
-			while(readBuffer.hasRemaining() && read!=-1) {
-				read = channel.read(readBuffer);				
-			}
-			Task newTask = new Task(channel,this.selector, readBuffer.array());
-			this.manager.addTask(newTask);
-			
-		}
-		catch(IOException e) {
+		synchronized(channel) {
+			ByteBuffer readBuffer = ByteBuffer.allocate(this.payloadLength);
+			int read =0;
 			try {
-				System.err.println("Client "+channel.getRemoteAddress() +" read code is "+read+". Terminating connection...");
-			} catch (IOException channelAddressLookupException) {
-				System.err.println("Client read code is "+read+", but could not lookup its remote address. Terminating connection...");
+				while(readBuffer.hasRemaining() && read!=-1) {
+					read = channel.read(readBuffer);				
+				}
+				Task newTask = new Task(channel,this.selector, readBuffer.array());
+				this.manager.addTask(newTask);
+				
 			}
-			try {
-				channel.close();
-			} catch (IOException e1) {				
-				System.err.println("Could not terminate the connection gracefully");
+			catch(IOException e) {
+				try {
+					System.err.println("Client "+channel.getRemoteAddress() +" read code is "+read+". Terminating connection...");
+				} catch (IOException channelAddressLookupException) {
+					System.err.println("Client read code is "+read+", but could not lookup its remote address. Terminating connection...");
+				}
+				try {
+					channel.close();
+				} catch (IOException e1) {				
+					System.err.println("Could not terminate the connection gracefully");
+				}
 			}
 		}
-		
 	}
 	public static void main(String[] args) {
 		int port = Integer.parseUnsignedInt(args[0]);

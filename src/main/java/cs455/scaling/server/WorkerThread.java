@@ -2,11 +2,7 @@ package cs455.scaling.server;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
-import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Set;
-
 import cs455.scaling.hash.Hash;
 
 public class WorkerThread extends Thread{
@@ -29,23 +25,24 @@ public class WorkerThread extends Thread{
 	
 	private void resolveTask(Task task) {
 			Hash response = new Hash(task.getChallenge());
-			try {
-				synchronized(task.replySocket) {
-					ByteBuffer toSend = ByteBuffer.wrap(response.getHash());
-					
-					while(toSend.hasRemaining()) {
-						task.replySocket.write(toSend);
-						
-					}
-					stats.taskProcessed(task);
-				}
-			}catch(Exception e) {
-				System.err.println("Failed to send response to the client: " +e.getLocalizedMessage()+" Terminating connection...");
+			synchronized(task.replySocket) {
 				try {
-					task.replySocket.close();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					
+						ByteBuffer toSend = ByteBuffer.wrap(response.getHash());
+						
+						while(toSend.hasRemaining()) {
+							task.replySocket.write(toSend);
+												
+						stats.taskProcessed(task);
+					}
+				}catch(Exception e) {
+					System.err.println("Failed to send response to the client: " +e.getLocalizedMessage()+" Terminating connection...");
+					try {
+						task.replySocket.close();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 				}
 			}
 	}

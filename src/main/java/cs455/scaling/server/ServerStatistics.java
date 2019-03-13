@@ -1,8 +1,8 @@
 package cs455.scaling.server;
 
 import java.nio.channels.SocketChannel;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -82,14 +82,16 @@ public class ServerStatistics {
 		
 	}
 	
-	private void resetCounters() {
-		synchronized(this.knownChannels.keySet()) {			
-			for(SocketChannel channel:this.knownChannels.keySet()) {				
-				synchronized(channel) {
-					if(channel.isOpen())
-						this.knownChannels.put(channel, 0);
-					else
-						this.knownChannels.remove(channel);
+	private void resetCounters() {;
+		synchronized(this.knownChannels) {
+			Set<SocketChannel> channels = this.knownChannels.keySet();
+			
+			synchronized(channels) {		
+				for(SocketChannel channel:channels) {								
+						if(channel.isOpen())
+							this.knownChannels.put(channel, 0);
+						else
+							this.knownChannels.remove(channel);
 				}
 			}
 		}
@@ -107,6 +109,8 @@ public class ServerStatistics {
 		public void run() {
 			while(true) {
 				String report = "";
+				
+				report+= "["+DateTimeFormatter.ISO_DATE_TIME.toString() +"] ";
 				int numberOfConnections = stats.numberOfConnections();
 				
 				report+="Server Throughput: "+(double)numberOfTasks()/reportTimespan*1000 +"messages/s, ";
