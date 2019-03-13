@@ -77,8 +77,6 @@ public class Client {
 				System.err.println("Interrupted when waiting for the next challenge to send");
 			}
 		}
-//		Thread listener = new Thread(new ResponseHandler(channel, selector,sentHashes));			
-//		listener.start();
 		
 	}
 	private void nextChallenge() {

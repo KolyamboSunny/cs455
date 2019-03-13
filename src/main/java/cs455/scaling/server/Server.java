@@ -73,6 +73,9 @@ public class Server{
 	private void read(SelectionKey key){
 		SocketChannel channel = (SocketChannel)key.channel();
 		synchronized(channel) {
+			
+			if (!channel.isOpen())return;
+			
 			ByteBuffer readBuffer = ByteBuffer.allocate(this.payloadLength);
 			int read =0;
 			try {
