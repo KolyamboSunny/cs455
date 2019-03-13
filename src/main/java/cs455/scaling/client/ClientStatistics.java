@@ -1,6 +1,9 @@
 package cs455.scaling.client;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 public class ClientStatistics {
 	long sentCounter=0;
@@ -39,7 +42,11 @@ public class ClientStatistics {
 		public void run() {
 			while(true) {
 				String report = "";
-				report+= "["+DateTimeFormatter.ISO_DATE_TIME.toString() +"] ";
+				//adding timestamp
+				DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				Date date = new Date();
+				report+= "["+dateFormat.format(date) +"] ";
+				
 				report+= "Total Sent Count: "+stats.getSent()+",";
 				report+= "Total Recieved Count: "+stats.getRecieved();
 				System.out.println(report);
