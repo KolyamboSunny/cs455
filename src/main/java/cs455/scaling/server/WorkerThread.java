@@ -23,16 +23,16 @@ public class WorkerThread extends Thread{
 		}
 	}
 	
-	private void resolveTask(Task task) {
+	private void resolveTask(Task task) {		
 			Hash response = new Hash(task.getChallenge());
 			synchronized(task.replySocket) {
+				if(!task.replySocket.isOpen())
+					return;
+				
 				try {
-					
 						ByteBuffer toSend = ByteBuffer.wrap(response.getHash());
-						
 						while(toSend.hasRemaining()) {
-							task.replySocket.write(toSend);
-												
+							task.replySocket.write(toSend);					
 						stats.taskProcessed(task);
 					}
 				}catch(Exception e) {

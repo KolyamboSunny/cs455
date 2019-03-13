@@ -48,7 +48,7 @@ public class Server{
 			while(keys.hasNext()) {
 				synchronized(keys) {
 					SelectionKey key = keys.next();
-					if(key.isAcceptable()) {
+					if(key.isValid() && key.isAcceptable()) {
 						SocketChannel client = serverChannel.accept();
 						if (client!=null) {
 							client.configureBlocking(false);
@@ -61,7 +61,7 @@ public class Server{
 							//System.out.println("Connection accepted: "+client.getLocalAddress());
 						}
 					}
-					if(key.isReadable()) {
+					if(key.isValid() && key.isReadable()) {
 						this.read(key);
 					}
 					keys.remove();
@@ -96,6 +96,7 @@ public class Server{
 				}
 			}
 		}
+		
 	}
 	public static void main(String[] args) {
 		int port = Integer.parseUnsignedInt(args[0]);

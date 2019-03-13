@@ -107,6 +107,10 @@ public class ServerStatistics {
 		public OnReportTimer(ServerStatistics stats) {
 			this.stats = stats;
 		}
+		
+		private double makePerSecond(double numPerPeriod) {
+			return numPerPeriod/reportTimespan*1000;
+		}
 				
 		@Override
 		public void run() {
@@ -120,12 +124,12 @@ public class ServerStatistics {
 				
 				int numberOfConnections = stats.numberOfConnections();
 				
-				report+="Server Throughput: "+(double)numberOfTasks()/reportTimespan*1000 +"messages/s, ";
+				report+="Server Throughput: "+makePerSecond(numberOfTasks()) +"messages/s, ";
 				report+="Active Client Connections: " + numberOfConnections+",";
 				
 				if(numberOfConnections>0) {
-					report+="Mean Per-client Throughput: " + stats.meanThroughput()+"messages/s, ";
-					report+="Std. Div. Of Per-client Throughput: " + stats.stdDivThroughput()+"messages/s";
+					report+="Mean Per-client Throughput: " + makePerSecond(stats.meanThroughput())+"messages/s, ";
+					report+="Std. Div. Of Per-client Throughput: " + makePerSecond(stats.stdDivThroughput())+"messages/s";
 				}
 				
 				System.out.println(report);
