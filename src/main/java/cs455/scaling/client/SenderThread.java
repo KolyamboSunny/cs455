@@ -21,22 +21,22 @@ public class SenderThread implements Runnable{
 	public void sendSomething(byte[] toSend) throws IOException {		
 		synchronized(channel) {
 			try {
-				channel.register(selector, SelectionKey.OP_WRITE);			
-				selector.select();
-				Set<SelectionKey> keySet= selector.selectedKeys();
-				Iterator<SelectionKey> keys = keySet.iterator();
-				while(keys.hasNext()) {
-					SelectionKey key = keys.next();
-					if(key.isWritable()) {
+			//	channel.register(selector, SelectionKey.OP_WRITE);			
+			//	selector.select();
+			//	Set<SelectionKey> keySet= selector.selectedKeys();
+			//	Iterator<SelectionKey> keys = keySet.iterator();
+			//	while(keys.hasNext()) {
+			//		SelectionKey key = keys.next();
+			//		if(key.isWritable()) {
 						ByteBuffer buffer = ByteBuffer.wrap(toSend);
 						
 						while(buffer.hasRemaining()) {
 							channel.write(buffer);
 						}
 						channel.register(selector,SelectionKey.OP_READ);
-					}
+		//			}
 		
-				}
+		//		}
 			}catch(Exception e) {
 				System.err.println("Failed to send response to the client");
 				channel.register(selector,SelectionKey.OP_READ);

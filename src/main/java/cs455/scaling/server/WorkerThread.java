@@ -27,34 +27,20 @@ public class WorkerThread extends Thread{
 	}
 	
 	private void resolveTask(Task task) {
-		synchronized(task.replySocket) {
-		synchronized(task.selector) {
 			Hash response = new Hash(task.getChallenge());
 			try {
-				task.replySocket.register(task.selector, SelectionKey.OP_WRITE);
-			
-				task.selector.select();
-				Set<SelectionKey> keySet= task.selector.selectedKeys();
-				Iterator<SelectionKey> keys = keySet.iterator();
-				while(keys.hasNext()) {
-					SelectionKey key = keys.next();
-					if(key.isWritable()) {
-						ByteBuffer toSend = ByteBuffer.wrap(response.getHash());
+				synchronized(task.replySocket) {
+					ByteBuffer toSend = ByteBuffer.wrap(response.getHash());
+					
+					while(toSend.hasRemaining()) {
+						task.replySocket.write(toSend);
 						
-						while(toSend.hasRemaining()) {
-							task.replySocket.write(toSend);
-							
-						}
-						stats.taskProcessed(task);
 					}
-		
+					stats.taskProcessed(task);
 				}
-				task.replySocket.register(task.selector, SelectionKey.OP_READ);
 			}catch(Exception e) {
 				System.err.println("Failed to send response to the client" +e.getLocalizedMessage());
 			}
-		}
-		}
 	}
 
 	@Override

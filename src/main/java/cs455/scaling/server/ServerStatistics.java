@@ -85,10 +85,12 @@ public class ServerStatistics {
 	private void resetCounters() {
 		synchronized(knownChannels) {
 			for(SocketChannel channel:this.knownChannels.keySet()) {
-				if(channel.isOpen())
-					this.knownChannels.put(channel, 0);
-				else
-					this.knownChannels.remove(channel);
+				synchronized(channel) {
+					if(channel.isOpen())
+						this.knownChannels.put(channel, 0);
+					else
+						this.knownChannels.remove(channel);
+				}
 			}
 		}
 	}
