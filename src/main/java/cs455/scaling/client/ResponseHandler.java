@@ -30,6 +30,7 @@ public class ResponseHandler implements Runnable {
 		synchronized(channel) {
 			while(!Thread.currentThread().isInterrupted()) {
 				try {
+					channel.register(selector,SelectionKey.OP_READ);
 					selector.select();
 					Set<SelectionKey> keySet= selector.selectedKeys();
 					Iterator<SelectionKey> keys = keySet.iterator();

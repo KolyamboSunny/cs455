@@ -26,10 +26,8 @@ public class SenderThread{
 					channel.write(buffer);
 				}
 				
-				channel.register(selector,SelectionKey.OP_READ);
 			}catch(Exception e) {
 				System.err.println("Failed to send response to the client");
-				channel.register(selector,SelectionKey.OP_READ);
 			}
 		}
 	}
