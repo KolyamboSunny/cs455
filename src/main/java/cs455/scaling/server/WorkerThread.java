@@ -1,5 +1,6 @@
 package cs455.scaling.server;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.util.Iterator;
@@ -39,7 +40,13 @@ public class WorkerThread extends Thread{
 					stats.taskProcessed(task);
 				}
 			}catch(Exception e) {
-				System.err.println("Failed to send response to the client" +e.getLocalizedMessage());
+				System.err.println("Failed to send response to the client: " +e.getLocalizedMessage()+" Terminating connection...");
+				try {
+					task.replySocket.close();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			}
 	}
 

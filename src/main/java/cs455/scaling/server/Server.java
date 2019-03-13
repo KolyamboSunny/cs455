@@ -58,7 +58,7 @@ public class Server{
 							synchronized(selector) {
 								client.register(selector, SelectionKey.OP_READ);
 							}	
-							System.out.println("Connection accepted: "+client.getLocalAddress());
+							//System.out.println("Connection accepted: "+client.getLocalAddress());
 						}
 					}
 					if(key.isReadable()) {
