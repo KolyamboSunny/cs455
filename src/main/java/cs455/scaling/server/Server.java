@@ -88,10 +88,10 @@ public class Server{
 			}
 			catch(IOException e) {
 				try {
-					System.err.println("Client "+channel.getRemoteAddress() +" stack trace is "+e.getStackTrace()+". Terminating connection...");
+					System.err.println("Client "+channel.getRemoteAddress() +" died because of  "+e+". Terminating connection...");
 					
 				} catch (IOException channelAddressLookupException) {
-					System.err.println("Client read code is "+read+", but could not lookup its remote address. Terminating connection...");
+					System.err.println("Client died because of  "+e+". Terminating connection...");
 				}
 				try {
 					channel.close();

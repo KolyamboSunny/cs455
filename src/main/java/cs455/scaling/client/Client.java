@@ -50,6 +50,8 @@ public class Client {
 			this.sender = new SenderThread(this.channel, this.selector);
 			this.channel.register(selector, SelectionKey.OP_CONNECT);
 			stats.start();
+			Thread listener = new Thread(new ResponseHandler(channel, selector,sentHashes,stats));			
+			listener.start();
 			
 			this.startChallenging();
 			
@@ -67,12 +69,8 @@ public class Client {
 			nextChallenge();
 			stats.incrementSent();
 			//limit --;
-			Thread listener = new Thread(new ResponseHandler(channel, selector,sentHashes,stats));			
-			listener.start();
 			try {
 				Thread.sleep(this.timeBetweenChallenges);				
-				listener.interrupt();
-				listener.join();
 			} catch (InterruptedException e) {
 				System.err.println("Interrupted when waiting for the next challenge to send");
 			}

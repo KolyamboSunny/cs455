@@ -27,7 +27,7 @@ public class ResponseHandler implements Runnable {
 
 	@Override
 	public void run() {
-		synchronized(channel) {
+		//synchronized(channel) {
 			while(!Thread.currentThread().isInterrupted()) {
 				try {
 					channel.register(selector,SelectionKey.OP_READ);
@@ -42,10 +42,10 @@ public class ResponseHandler implements Runnable {
 						keys.remove();
 					}
 				} catch (IOException e1) {				
-						System.err.println("Connection to server terminated.");
+						System.err.println("Connection to server terminated."+e1);
 				}
 				
-			}
+		//	}
 		}
 	}
 	
